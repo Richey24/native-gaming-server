@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 require("dotenv").config();
-const bcrypt = require("bcrypt");
 const Adminuser = require("./model/Admin");
 
 mongoose
@@ -14,17 +13,21 @@ mongoose
 
 const addAdmin = async (email, password, role) => {
   try {
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    const newAdmin = new Adminuser({
+    const existingUser = await Adminuser.findOne({ email });
+    if (existingUser)
+      return res
+        .status(409)
+        .json({ message: "User already exist with this email", status: "409" });
+    const adminId = generateAdminId();
+    const newUser = new Adminuser({
       email,
-      password: hashedPassword,
+      password,
       role,
+      adminId: adminId,
     });
-
-    await newAdmin.save();
-    console.log("New admin user created");
+    console.log(newUser);
+    await newUser.save();
+    sendAdminWelcomeMail(email, adminId);
   } catch (error) {
     console.error("Error creating admin user:", error);
   } finally {
@@ -32,4 +35,19 @@ const addAdmin = async (email, password, role) => {
   }
 };
 
-addAdmin("justiniyke1995@gmail.com", "Test1234@", "SuperAdmin");
+addAdmin("nidapam850@jadsys.com", "Test1234@", "BasicAdmin");
+
+function generateAdminId() {
+  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; // String of uppercase letters
+  const digits = "0123456789"; // String of digits
+  const characters = letters + digits; // Combine letters and digits
+
+  let adminId = "";
+
+  for (let i = 0; i < 8; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    adminId += characters.charAt(randomIndex);
+  }
+
+  return adminId;
+}

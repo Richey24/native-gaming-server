@@ -18,35 +18,63 @@ const adminSchema = new mongoose.Schema({
     ],
     required: [true, "Please include user role"],
   },
+  adminId: {
+    type: String,
+    required: [true, "Please Include your admin Id"],
+  },
+  tokens: [
+    {
+      token: {
+        type: String,
+        required: true,
+      },
+    },
+  ],
 });
 
-adminSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) {
-    return next();
+adminSchema.pre("save", async function () {
+  const user = this;
+  if (user.isModified("password")) {
+    user.password = await bcrypt.hash(user.password, 12);
   }
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
+  // if (!this.isModified("password")) {
+  //   return next();
+  // }
+  // const salt = await bcrypt.genSalt(10);
+  // this.password = await bcrypt.hash(this.password, salt);
+  // next();
 });
+adminSchema.methods.generateAuthToken = async function () {
+  const user = this;
+  var token = jwt.sign(
+    {
+      _id: user._id,
+      adminId: user.adminId,
+      email: user.email,
+    },
+    "adminsecret",
+    { expiresIn: "24h" }
+  );
+  user.tokens = user.tokens.concat({ token });
+  await user.save();
 
-adminSchema.methods.comparePassword = function (enteredPassword) {
-  return bcrypt.compare(enteredPassword, this.password);
+  return token;
 };
 
-// adminSchema.statics.findByCredentials = async (email, password) => {
-//   const user = await Adminuser.findOne({ email });
+adminSchema.statics.findByCredentials = async (email, password) => {
+  const user = await Adminuser.findOne({ email });
 
-//   if (!user) {
-//     return false;
-//   }
-//   const isPasswordMatch = await bcrypt.compare(password, user.password);
-//   console.log(password);
-//   console.log(user.password);
-//   if (!isPasswordMatch) {
-//     return false;
-//   }
-//   return user;
-// };
+  if (!user) {
+    return false;
+  }
+  const isPasswordMatch = await bcrypt.compare(password, user.password);
+  console.log(password);
+  console.log(user.password);
+  if (!isPasswordMatch) {
+    return false;
+  }
+  return user;
+};
 
 const Adminuser = mongoose.model("Admin", adminSchema);
 

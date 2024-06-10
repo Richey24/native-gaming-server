@@ -12,31 +12,22 @@ exports.login = async (req, res) => {
   }
 
   try {
-    let admin = await Adminuser.findOne({ email });
-    if (!admin) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
+    const existingUser = await Adminuser.findByCredentials(email, password);
+    if (!existingUser)
+      return res.status(400).json({
+        message: "Login failed! Check authenthication credentails",
+      });
 
-    const isMatch = await admin.comparePassword(password);
-    if (!isMatch) {
-      console.log(isMatch);
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
+    await existingUser.save();
+    const userWithoutPassword = {
+      _id: existingUser._id,
+      email: existingUser.email,
+      adminId: existingUser?.adminId,
+      role: existingUser?.role,
+    };
+    const token = await existingUser.generateAuthToken();
 
-    const payload = { id: admin.id, email: admin.email };
-    const token = jwt.sign(payload, "turkeyhunt", { expiresIn: "1h" });
-
-    res.json({ token });
-    // const existingUser = await Adminuser.findByCredentials(email, password);
-    // if (!existingUser)
-    //   return res.status(400).json({
-    //     message: "Login failed! Check authenthication credentails",
-    //   });
-
-    // const payload = { adminId: existingUser.id };
-    // const token = jwt.sign(payload, "turkeyhunt", { expiresIn: "1h" });
-
-    res.status(200).json({ token, message: "Login successful" });
+    res.status(201).json({ user: userWithoutPassword, token, status: "201" });
   } catch (error) {
     console.error(error);
     res.status(500).send("Server error");

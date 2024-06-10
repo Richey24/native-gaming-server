@@ -1,6 +1,6 @@
 const User = require("../../model/User");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+// const bcrypt = require("bcrypt");
+// const jwt = require("jsonwebtoken");
 const generateOtp = require("../../utils/generateOtp");
 const { sendOtp, sendForgotPasswordEmail } = require("../../utils/sendMail");
 
@@ -104,6 +104,7 @@ exports.forgotPassword = async (req, res) => {
     }
     const otp = generateOtp();
     check.otp = otp;
+    console.log(otp);
     await check.save();
     sendForgotPasswordEmail(email, check.firstname, otp);
     res
