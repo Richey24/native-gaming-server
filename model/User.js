@@ -21,13 +21,20 @@ const UserSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: [true, "Please Include your password"],
+    // required: [true, "Please Include your password"],
+  },
+  gender: {
+    type: String,
+    default: "OTHERS",
+    enum: ["FEMALE", "MALE", "OTHERS"],
+    required: [true, "Please include user gender"],
   },
   otp: { type: String },
   isVerified: { type: Boolean, default: false },
   isSubscribed: {
     type: Boolean,
   },
+  googleId: { type: String, unique: true },
   tokens: [
     {
       token: {

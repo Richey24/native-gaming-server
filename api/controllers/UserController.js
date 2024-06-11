@@ -3,6 +3,7 @@ const User = require("../../model/User");
 // const jwt = require("jsonwebtoken");
 const generateOtp = require("../../utils/generateOtp");
 const { sendOtp, sendForgotPasswordEmail } = require("../../utils/sendMail");
+const admin = require("../../firebaseAdmin");
 
 exports.vendorRegister = async (req, res) => {
   const {
@@ -12,6 +13,7 @@ exports.vendorRegister = async (req, res) => {
     password,
     confirmPassword,
     email,
+    gender,
   } = req.body;
 
   if (
@@ -20,10 +22,12 @@ exports.vendorRegister = async (req, res) => {
     !organizationName ||
     !password ||
     !email ||
-    !confirmPassword
+    !confirmPassword ||
+    !gender
   ) {
     return res.status(400).json({ message: "Please enter all fields" });
   }
+
   if (password !== confirmPassword) {
     return res
       .status(401)
@@ -58,7 +62,7 @@ exports.vendorRegister = async (req, res) => {
       isVerified: user.isVerified,
       subscribed: user.isSubscribed,
     };
-    token = await user.generateAuthToken(req.body.domain);
+    token = await user.generateAuthToken();
     res.status(201).json({
       user: userWithoutPassword,
       token: token,
@@ -86,7 +90,10 @@ exports.verifyOtp = async (req, res) => {
     user.isVerified = true;
     user.otp = undefined;
     await user.save();
-    res.status(200).json({ message: "Account verified successfully" });
+    const token = await user.generateAuthToken();
+    res
+      .status(200)
+      .json({ message: "Account verified successfully", token: token });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
@@ -140,6 +147,7 @@ exports.forgotPassword = async (req, res) => {
 exports.resetPassword = async (req, res) => {
   try {
     const { token, password, confirmPassword } = req.body;
+
     if (password !== confirmPassword) {
       return res
         .status(401)
@@ -161,5 +169,46 @@ exports.resetPassword = async (req, res) => {
   } catch (error) {
     console.error("Error updating password:", error);
     res.status(500).json({ error, status: false });
+  }
+};
+
+exports.socialRegister = async (req, res) => {
+  const { token, user } = req.body;
+  try {
+    await admin.auth().verifyIdToken(token);
+    const { uid, email, displayName } = user;
+
+    const nameParts = displayName.split(" ");
+    const firstname = nameParts[0];
+    const lastname = nameParts.slice(1).join(" ");
+
+    let existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      // Updating the user with Google ID if it doesn't not exist
+      if (!existingUser.googleId) {
+        existingUser.googleId = uid;
+        await existingUser.save();
+      }
+    } else {
+      existingUser = new User({
+        googleId: uid,
+        email,
+        firstname,
+        lastname,
+        isVerified: true,
+        organizationName: firstname + " " + lastname,
+      });
+      await existingUser.save();
+    }
+
+    const jwtToken = await existingUser.generateAuthToken();
+    res.status(201).json({
+      user: existingUser,
+      token: jwtToken,
+      message: "User registered successfully.",
+    });
+  } catch (error) {
+    res.status(400).json({ message: "Google authentication failed", error });
   }
 };
