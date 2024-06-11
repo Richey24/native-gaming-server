@@ -49,11 +49,9 @@ UserSchema.pre("save", async function (next) {
   try {
     const user = this;
     if (user.isModified("password")) {
-      return next();
+      user.password = await bcrypt.hash(user.password, 8);
     }
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(user.password, salt);
-    this.password = hashedPassword;
+
     var token = jwt.sign(
       {
         _id: user._id,
@@ -103,7 +101,7 @@ UserSchema.statics.findByCredentials = async (email, password) => {
   if (!user) {
     return false;
   }
-
+  console.log("reached", user);
   const isPasswordMatch = await bcrypt.compare(password, user.password);
 
   if (!isPasswordMatch) {
