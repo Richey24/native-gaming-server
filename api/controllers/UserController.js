@@ -31,6 +31,8 @@ exports.vendorRegister = async (req, res) => {
   }
   try {
     let user = await User.findOne({ email });
+    let token;
+    let userWithoutPassword;
     if (user) {
       return res
         .status(400)
@@ -48,7 +50,18 @@ exports.vendorRegister = async (req, res) => {
     });
     await user.save();
     await sendOtp(user.email, user.organizationName, otp, "vendor");
+    userWithoutPassword = {
+      _id: user._id,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      email: user.email,
+      isVerified: user.isVerified,
+      subscribed: user.isSubscribed,
+    };
+    token = await user.generateAuthToken(req.body.domain);
     res.status(201).json({
+      user: userWithoutPassword,
+      token: token,
       message:
         "User registered successfully. An OTP code has been sent to your mail.",
     });
@@ -90,7 +103,16 @@ exports.vendorLogin = async (req, res) => {
       .status(400)
       .json({ message: "Login failed! Check authenthication credentails" });
   }
-  res.status(201).json({ user: user });
+  const userWithoutPassword = {
+    _id: user._id,
+    firstname: user.firstname,
+    lastname: user.lastname,
+    email: user.email,
+    isVerified: user.isVerified,
+    subscribed: user.isSubscribed,
+  };
+  const token = await user.generateAuthToken(user.email);
+  res.status(201).json({ user: userWithoutPassword, token });
 };
 
 exports.forgotPassword = async (req, res) => {
@@ -111,6 +133,33 @@ exports.forgotPassword = async (req, res) => {
       .status(200)
       .json({ message: "An OTP has been sent to your mail", status: true });
   } catch (error) {
+    res.status(500).json({ error, status: false });
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  try {
+    const { token, password, confirmPassword } = req.body;
+    if (password !== confirmPassword) {
+      return res
+        .status(401)
+        .json({ message: "password and confirm password do not match" });
+    }
+    const decoded = jwt.verify(token, "secret");
+    const user = await User.findById(decoded._id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.password = password;
+    await user.save();
+
+    res
+      .status(200)
+      .json({ message: "Password updated successfully", status: true });
+  } catch (error) {
+    console.error("Error updating password:", error);
     res.status(500).json({ error, status: false });
   }
 };

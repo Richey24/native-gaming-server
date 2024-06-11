@@ -25,21 +25,70 @@ const UserSchema = new mongoose.Schema({
   },
   otp: { type: String },
   isVerified: { type: Boolean, default: false },
+  isSubscribed: {
+    type: Boolean,
+  },
+  tokens: [
+    {
+      token: {
+        type: String,
+        required: true,
+      },
+    },
+  ],
 });
 
 UserSchema.pre("save", async function (next) {
   try {
-    if (!this.isModified("password")) {
+    const user = this;
+    if (user.isModified("password")) {
       return next();
     }
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(this.password, salt);
+    const hashedPassword = await bcrypt.hash(user.password, salt);
     this.password = hashedPassword;
-    next();
+    var token = jwt.sign(
+      {
+        _id: user._id,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        email: user.email,
+      },
+      "secret"
+    );
+    user.tokens = user.tokens.concat({ token });
+    return token;
   } catch (err) {
     next(err);
   }
 });
+
+UserSchema.methods.generateAuthToken = async function () {
+  const user = this;
+  let options = {};
+
+  // Set token to expire in 1 hour in production mode
+  if (process.env.NODE_ENV !== "development") {
+    options.expiresIn = "1h";
+  } else {
+    options.expiresIn = "5d";
+  }
+
+  const token = jwt.sign(
+    {
+      _id: user._id,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      emaiål: user.email,
+    },
+    "secret",
+    options
+  );
+  user.tokens = user.tokens.concat({ token });
+  await user.save();
+
+  return token;
+};
 
 UserSchema.statics.findByCredentials = async (email, password) => {
   const user = await User.findOne({ email });
