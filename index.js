@@ -3,7 +3,6 @@ require("dotenv").config();
 const PORT = process.env.PORT || 4000;
 const cors = require("cors");
 const mongoose = require("mongoose");
-const bodyParser = require("body-parser");
 const app = express();
 
 mongoose
@@ -39,7 +38,6 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
-app.use(bodyParser.json());
 
 app.get("/", (req, res) => {
   console.log("Hello  API working");
