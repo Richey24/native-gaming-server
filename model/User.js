@@ -34,6 +34,9 @@ const UserSchema = new mongoose.Schema({
   isSubscribed: {
     type: Boolean,
   },
+  logo: {
+    type: String,
+  },
   googleId: { type: String, unique: true },
   tokens: [
     {

@@ -1,6 +1,6 @@
 const User = require("../../model/User");
 // const bcrypt = require("bcrypt");
-// const jwt = require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 const generateOtp = require("../../utils/generateOtp");
 const { sendOtp, sendForgotPasswordEmail } = require("../../utils/sendMail");
 const admin = require("../../firebaseAdmin");
@@ -212,3 +212,24 @@ exports.socialRegister = async (req, res) => {
     res.status(400).json({ message: "Google authentication failed", error });
   }
 };
+
+exports.updateUserInfo = async (req, res) => {
+  const { id } = req.params;
+  const { organizationName, firstname, lastname } = req.body;
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      { organizationName, firstname, lastname },
+      { new: true, runValidators: true }
+    );
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({ user: updatedUser });
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+exports.updateCompanyLogo = async (req, res) => {};

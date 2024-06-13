@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 require("dotenv").config();
 const Adminuser = require("./model/Admin");
+const { sendAdminWelcomeMail } = require("./utils/sendMail");
 
 mongoose
   .connect(process.env.MONGO_URL)
@@ -14,10 +15,10 @@ mongoose
 const addAdmin = async (email, password, role) => {
   try {
     const existingUser = await Adminuser.findOne({ email });
-    if (existingUser)
-      return res
-        .status(409)
-        .json({ message: "User already exist with this email", status: "409" });
+    if (existingUser) return console.error("user already exists");
+    // return res
+    //   .status(409)
+    //   .json({ message: "User already exist with this email", status: "409" });
     const adminId = generateAdminId();
     const newUser = new Adminuser({
       email,
@@ -35,7 +36,7 @@ const addAdmin = async (email, password, role) => {
   }
 };
 
-addAdmin("nidapam850@jadsys.com", "Test1234@", "BasicAdmin");
+addAdmin("babanbasmah@gmail.com", "password", "SuperAdmin");
 
 function generateAdminId() {
   const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; // String of uppercase letters
