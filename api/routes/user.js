@@ -11,6 +11,10 @@ router.post("/verify-otp", asyncHandler(userController.verifyOtp));
 router.post("/login", asyncHandler(userController.vendorLogin));
 router.post("/forgot-password", asyncHandler(userController.forgotPassword));
 router.post("/reset-password", asyncHandler(userController.resetPassword));
-router.post("/update-user", auth, asyncHandler(userController.updateUserInfo));
+router.put(
+  "/update-user/:id",
+  auth,
+  asyncHandler(userController.updateUserInfo)
+);
 
 module.exports = router;
