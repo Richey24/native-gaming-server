@@ -37,6 +37,9 @@ const UserSchema = new mongoose.Schema({
   logo: {
     type: String,
   },
+  phone: {
+    type: String, // New phone number field
+  },
   googleId: { type: String, unique: true },
   tokens: [
     {

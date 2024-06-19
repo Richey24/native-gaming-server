@@ -161,6 +161,7 @@ exports.resetPassword = async (req, res) => {
     }
 
     user.password = password;
+    user.otp = undefined;
     await user.save();
 
     res
@@ -215,11 +216,11 @@ exports.socialRegister = async (req, res) => {
 
 exports.updateUserInfo = async (req, res) => {
   const { id } = req.params;
-  const { organizationName, firstname, lastname } = req.body;
+  const updateFields = { ...req.body };
   try {
     const updatedUser = await User.findByIdAndUpdate(
       id,
-      { organizationName, firstname, lastname },
+      { $set: updateFields },
       { new: true, runValidators: true }
     );
     if (!updatedUser) {
@@ -231,5 +232,3 @@ exports.updateUserInfo = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
-exports.updateCompanyLogo = async (req, res) => {};
