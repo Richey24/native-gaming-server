@@ -5,6 +5,7 @@ const AccountName = process.env.AZURE_BLOB_AccountName;
 const AccountKey = process.env.AZURE_BLOB_AccountKey;
 const AzureUrl = process.env.AZURE_BLOB_Url;
 const AzureEndpoint = process.env.AZURE_BLOB_Endpoint;
+
 const blobClient = BlobServiceClient.fromConnectionString(
   `DefaultEndpointsProtocol=${AzureUrl};AccountName=${AccountName};AccountKey=${AccountKey};EndpointSuffix=${AzureEndpoint}`
 );
