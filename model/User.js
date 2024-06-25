@@ -50,6 +50,7 @@ const UserSchema = new mongoose.Schema({
     },
   ],
 });
+const MAX_TOKENS = 5;
 
 UserSchema.pre("save", async function (next) {
   try {
@@ -58,17 +59,18 @@ UserSchema.pre("save", async function (next) {
       user.password = await bcrypt.hash(user.password, 8);
     }
 
-    var token = jwt.sign(
-      {
-        _id: user._id,
-        firstname: user.firstname,
-        lastname: user.lastname,
-        email: user.email,
-      },
-      "secret"
-    );
-    user.tokens = user.tokens.concat({ token });
-    return token;
+    // var token = jwt.sign(
+    //   {
+    //     _id: user._id,
+    //     firstname: user.firstname,
+    //     lastname: user.lastname,
+    //     email: user.email,
+    //   },
+    //   "secret"
+    // );
+    // user.tokens = user.tokens.concat({ token });
+    // return token;
+    next();
   } catch (err) {
     next(err);
   }
@@ -96,6 +98,9 @@ UserSchema.methods.generateAuthToken = async function () {
     options
   );
   user.tokens = user.tokens.concat({ token });
+  if (user.tokens.length > MAX_TOKENS) {
+    user.tokens = user.tokens.slice(user.tokens.length - MAX_TOKENS);
+  }
   await user.save();
 
   return token;

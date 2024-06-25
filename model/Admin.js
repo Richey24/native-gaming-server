@@ -56,6 +56,9 @@ adminSchema.methods.generateAuthToken = async function () {
     { expiresIn: "24h" }
   );
   user.tokens = user.tokens.concat({ token });
+  if (user.tokens.length > MAX_TOKENS) {
+    user.tokens = user.tokens.slice(user.tokens.length - MAX_TOKENS);
+  }
   await user.save();
 
   return token;

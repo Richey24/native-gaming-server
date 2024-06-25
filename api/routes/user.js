@@ -4,6 +4,7 @@ const auth = require("../../config/auth");
 
 const userController = require("../controllers/UserController");
 const asyncHandler = require("../../config/asyncHandler");
+const authMiddleware = require("../../middleware/authMiddleware");
 
 router.post("/register", asyncHandler(userController.vendorRegister));
 router.post("/google-login", asyncHandler(userController.socialRegister));
@@ -16,5 +17,6 @@ router.put(
   auth,
   asyncHandler(userController.updateUserInfo)
 );
+router.get("/me", authMiddleware, asyncHandler(userController.getUserDetails));
 
 module.exports = router;

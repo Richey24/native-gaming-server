@@ -177,7 +177,7 @@ exports.socialRegister = async (req, res) => {
   const { token, user } = req.body;
   try {
     await admin.auth().verifyIdToken(token);
-    const { uid, email, displayName } = user;
+    const { uid, email, displayName, logo } = user;
 
     const nameParts = displayName.split(" ");
     const firstname = nameParts[0];
@@ -197,6 +197,7 @@ exports.socialRegister = async (req, res) => {
         email,
         firstname,
         lastname,
+        logo,
         isVerified: true,
         organizationName: firstname + " " + lastname,
       });
@@ -231,4 +232,8 @@ exports.updateUserInfo = async (req, res) => {
     console.error("Error updating user:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
+};
+
+exports.getUserDetails = (req, res) => {
+  res.status(200).json({ user: req.user });
 };
