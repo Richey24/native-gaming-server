@@ -1,5 +1,6 @@
 const Adminuser = require("../../model/Admin");
 const jwt = require("jsonwebtoken");
+const User = require("../../model/User");
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;
@@ -53,5 +54,32 @@ exports.verifyOtp = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+exports.getAdminDetails = async (req, res) => {
+  try {
+    res.status(200).json({ admin: req.admin });
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+exports.getAllVendors = async (req, res) => {
+  try {
+    const users = await User.find({}).select("-password -tokens");
+    res.status(200).json({ users });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+exports.getAllAdmins = async (req, res) => {
+  try {
+    const admins = await Adminuser.find({}).select("-password -tokens");
+    res.status(200).json({ admins });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };

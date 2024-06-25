@@ -235,5 +235,9 @@ exports.updateUserInfo = async (req, res) => {
 };
 
 exports.getUserDetails = (req, res) => {
-  res.status(200).json({ user: req.user });
+  try {
+    res.status(200).json({ user: req.user });
+  } catch (err) {
+    res.status(500).json({ message: "Internal Server Error", err });
+  }
 };

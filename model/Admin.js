@@ -31,7 +31,7 @@ const adminSchema = new mongoose.Schema({
     },
   ],
 });
-
+const MAX_TOKENS = 5;
 adminSchema.pre("save", async function () {
   const user = this;
   if (user.isModified("password")) {
