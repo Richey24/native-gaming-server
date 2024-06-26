@@ -1,6 +1,6 @@
 const Client = require("../../model/Client");
 const User = require("../../model/User");
-const bcrypt = require("bcryptjs");
+const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 exports.registerClient = async (req, res) => {
@@ -42,6 +42,9 @@ exports.registerClient = async (req, res) => {
       user: userId,
     });
     await client.save();
+
+    user.clients.push(client._id);
+    await user.save();
     res.status(201).json({ message: "Client registered successfully", client });
   } catch (err) {
     console.error(err);

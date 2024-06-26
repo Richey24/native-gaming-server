@@ -17,6 +17,11 @@ router.put(
   asyncHandler(userController.updateUserInfo)
 );
 router.get("/me", authMiddleware, asyncHandler(userController.getUserDetails));
+router.get(
+  "/get-clients",
+  authMiddleware,
+  asyncHandler(userController.getClients)
+);
 router.put(
   "/change-password",
   authMiddleware,

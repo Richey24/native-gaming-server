@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const generateOtp = require("../../utils/generateOtp");
 const { sendOtp, sendForgotPasswordEmail } = require("../../utils/sendMail");
 const admin = require("../../firebaseAdmin");
+const Client = require("../../model/Client");
 
 exports.vendorRegister = async (req, res) => {
   const {
@@ -104,7 +105,6 @@ exports.vendorLogin = async (req, res) => {
   const { email, password } = req.body;
 
   const user = await User.findByCredentials(email, password);
-  console.log("first check", user);
   if (!user) {
     return res
       .status(400)
@@ -271,6 +271,17 @@ exports.changePassword = async (req, res) => {
     res.status(200).json({ message: "Password changed successfully" });
   } catch (error) {
     console.error("Error changing password:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+exports.getClients = async (req, res) => {
+  try {
+    const vendorId = req.user._id;
+    const clients = await Client.find({ user: vendorId }).select("-password");
+    res.status(200).json(clients);
+  } catch (error) {
+    console.error("Error fetching clients:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };

@@ -3,34 +3,37 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { ADMIN_ROLE } = require("../schemas/Admin.schema");
 
-const adminSchema = new mongoose.Schema({
-  email: { type: String, required: true },
-  password: { type: String, required: true },
-  role: {
-    type: String,
-    default: ADMIN_ROLE.BasicAdmin,
-    enum: [
-      ADMIN_ROLE.BasicAdmin,
-      ADMIN_ROLE.OperationsAdmin,
-      ADMIN_ROLE.SuperAdmin,
-      ADMIN_ROLE.CustomerCare,
-      ADMIN_ROLE.EditorAdmin,
-    ],
-    required: [true, "Please include user role"],
-  },
-  adminId: {
-    type: String,
-    required: [true, "Please Include your admin Id"],
-  },
-  tokens: [
-    {
-      token: {
-        type: String,
-        required: true,
-      },
+const adminSchema = new mongoose.Schema(
+  {
+    email: { type: String, required: true },
+    password: { type: String, required: true },
+    role: {
+      type: String,
+      default: ADMIN_ROLE.BasicAdmin,
+      enum: [
+        ADMIN_ROLE.BasicAdmin,
+        ADMIN_ROLE.OperationsAdmin,
+        ADMIN_ROLE.SuperAdmin,
+        ADMIN_ROLE.CustomerCare,
+        ADMIN_ROLE.EditorAdmin,
+      ],
+      required: [true, "Please include user role"],
     },
-  ],
-});
+    adminId: {
+      type: String,
+      required: [true, "Please Include your admin Id"],
+    },
+    tokens: [
+      {
+        token: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
+  },
+  { timestamps: true }
+);
 const MAX_TOKENS = 5;
 adminSchema.pre("save", async function () {
   const user = this;
@@ -71,8 +74,6 @@ adminSchema.statics.findByCredentials = async (email, password) => {
     return false;
   }
   const isPasswordMatch = await bcrypt.compare(password, user.password);
-  console.log(password);
-  console.log(user.password);
   if (!isPasswordMatch) {
     return false;
   }

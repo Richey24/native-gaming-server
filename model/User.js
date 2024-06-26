@@ -2,54 +2,69 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-const UserSchema = new mongoose.Schema({
-  organizationName: {
-    type: String,
-    required: [true, "Please include your organization name"],
-  },
-  firstname: {
-    type: String,
-    required: [true, "Please Include your first name"],
-  },
-  lastname: {
-    type: String,
-    required: [true, "Please include your last Name"],
-  },
-  email: {
-    type: String,
-    required: [true, "Please Include your email"],
-  },
-  password: {
-    type: String,
-    // required: [true, "Please Include your password"],
-  },
-  gender: {
-    type: String,
-    default: "OTHERS",
-    enum: ["FEMALE", "MALE", "OTHERS"],
-    required: [true, "Please include user gender"],
-  },
-  otp: { type: String },
-  isVerified: { type: Boolean, default: false },
-  isSubscribed: {
-    type: Boolean,
-  },
-  logo: {
-    type: String,
-  },
-  phone: {
-    type: String, // New phone number field
-  },
-  googleId: { type: String, unique: true },
-  tokens: [
-    {
-      token: {
-        type: String,
-        required: true,
-      },
+const UserSchema = new mongoose.Schema(
+  {
+    organizationName: {
+      type: String,
+      required: [true, "Please include your organization name"],
     },
-  ],
-});
+    firstname: {
+      type: String,
+      required: [true, "Please Include your first name"],
+    },
+    lastname: {
+      type: String,
+      required: [true, "Please include your last Name"],
+    },
+    email: {
+      type: String,
+      required: [true, "Please Include your email"],
+    },
+    password: {
+      type: String,
+      // required: [true, "Please Include your password"],
+    },
+    gender: {
+      type: String,
+      default: "OTHERS",
+      enum: ["FEMALE", "MALE", "OTHERS"],
+      required: [true, "Please include user gender"],
+    },
+    otp: { type: String },
+    isVerified: { type: Boolean, default: false },
+    isSubscribed: {
+      type: Boolean,
+    },
+    logo: {
+      type: String,
+    },
+    phone: {
+      type: String, // New phone number field
+    },
+    title: {
+      type: String,
+    },
+    about: {
+      type: String,
+    },
+    googleId: { type: String, unique: true },
+    tokens: [
+      {
+        token: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
+    clients: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Client",
+      },
+    ],
+  },
+  { timestamps: true }
+);
 const MAX_TOKENS = 5;
 
 UserSchema.pre("save", async function (next) {
@@ -112,7 +127,6 @@ UserSchema.statics.findByCredentials = async (email, password) => {
   if (!user) {
     return false;
   }
-  console.log("reached", user);
   const isPasswordMatch = await bcrypt.compare(password, user.password);
 
   if (!isPasswordMatch) {
