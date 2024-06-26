@@ -82,7 +82,7 @@ exports.getAllVendors = async (req, res) => {
         isSubscribed: user.isSubscribed,
         logo: user.logo,
         phone: user.phone,
-        title:
+        description:
           user.title ??
           "If everything I did failed - which it doesn't, I think that it actually succeeds.",
         about: user.about,
