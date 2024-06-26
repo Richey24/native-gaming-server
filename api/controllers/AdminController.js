@@ -67,8 +67,13 @@ exports.getAdminDetails = async (req, res) => {
 };
 
 exports.getAllVendors = async (req, res) => {
+  const { page = 1, limit = 10 } = req.query;
   try {
-    const users = await User.find({}).select("-password -tokens");
+    const users = await User.find({})
+      .select("-password -tokens")
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
+      .exec();
     // .populate("clients");
     const userDetails = users.map((user) => {
       return {
@@ -91,7 +96,15 @@ exports.getAllVendors = async (req, res) => {
         clientCount: user.clients.length, // Calculate the total number of clients
       };
     });
-    res.status(200).json({ userDetails });
+    const count = await User.countDocuments();
+    res
+      .status(200)
+      .json({
+        userDetails,
+        totalPages: Math.ceil(count / limit),
+        currentPage: page,
+        totalUsers: count,
+      });
   } catch (error) {
     console.error("Error fetching users:", error);
     res.status(500).json({ message: "Internal Server Error" });
