@@ -1,5 +1,5 @@
 const User = require("../../model/User");
-// const bcrypt = require("bcrypt");
+const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const generateOtp = require("../../utils/generateOtp");
 const { sendOtp, sendForgotPasswordEmail } = require("../../utils/sendMail");
@@ -216,7 +216,8 @@ exports.socialRegister = async (req, res) => {
 };
 
 exports.updateUserInfo = async (req, res) => {
-  const { id } = req.params;
+  const id = req.user._id;
+  // const { id } = req.params;
   const updateFields = { ...req.body };
   try {
     const updatedUser = await User.findByIdAndUpdate(
@@ -234,10 +235,42 @@ exports.updateUserInfo = async (req, res) => {
   }
 };
 
-exports.getUserDetails = (req, res) => {
+exports.getUserDetails = async (req, res) => {
   try {
     res.status(200).json({ user: req.user });
   } catch (err) {
     res.status(500).json({ message: "Internal Server Error", err });
+  }
+};
+
+exports.changePassword = async (req, res) => {
+  const { oldPassword, newPassword, confirmPassword } = req.body;
+
+  if (newPassword !== confirmPassword) {
+    return res
+      .status(401)
+      .json({ message: "new password and confirm password do not match" });
+  }
+
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({ message: "Old password is incorrect" });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.status(200).json({ message: "Password changed successfully" });
+  } catch (error) {
+    console.error("Error changing password:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
