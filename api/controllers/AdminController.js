@@ -1,6 +1,7 @@
 const Adminuser = require("../../model/Admin");
 const jwt = require("jsonwebtoken");
 const User = require("../../model/User");
+const Client = require("../../model/Client");
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;
@@ -68,7 +69,29 @@ exports.getAdminDetails = async (req, res) => {
 exports.getAllVendors = async (req, res) => {
   try {
     const users = await User.find({}).select("-password -tokens");
-    res.status(200).json({ users });
+    // .populate("clients");
+    const userDetails = users.map((user) => {
+      return {
+        id: user._id,
+        organizationName: user.organizationName,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        email: user.email,
+        gender: user.gender,
+        isVerified: user.isVerified,
+        isSubscribed: user.isSubscribed,
+        logo: user.logo,
+        phone: user.phone,
+        title:
+          user.title ??
+          "If everything I did failed - which it doesn't, I think that it actually succeeds.",
+        about: user.about,
+        googleId: user.googleId,
+        createdAt: user.createdAt ?? new Date("2024-06-14"),
+        clientCount: user.clients.length, // Calculate the total number of clients
+      };
+    });
+    res.status(200).json({ userDetails });
   } catch (error) {
     console.error("Error fetching users:", error);
     res.status(500).json({ message: "Internal Server Error" });

@@ -31,11 +31,13 @@ app.get("/", (req, res) => {
 });
 
 const userRouter = require("./api/routes/user");
+const clientRouter = require("./api/routes/client");
 const adminRouter = require("./api/routes/admin");
 const imageRouter = require("./api/routes/image");
 
 app.use("/api/admin", adminRouter);
 app.use("/api/user", userRouter);
+app.use("/api/client", clientRouter);
 app.use("/image", imageRouter);
 
 app.listen(PORT, () => {
