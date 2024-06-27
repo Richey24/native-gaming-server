@@ -22,11 +22,12 @@ exports.ParticipantRegister = async (req, res) => {
 
     if (participant) {
       if (!participant.isVerified) {
-        const otp = generateOtp();
+        const otp = generateOtp();g
         participant.otp = otp;
         await participant.save();
-        await sendOtp(participant.email, participant.organizationName, otp, "participant");
+        sendOtp(participant.email, participant.organizationName, otp, "participant");
         return res.status(200).json({
+          status: "not_verified",
           message: "Participant is already registered but not verified. A new OTP has been sent to your email.",
         });
       }
@@ -69,14 +70,14 @@ exports.ParticipantRegister = async (req, res) => {
     res.status(201).json({
       participant: participantWithoutPassword,
       token: token,
-      message:
-        "Participant registered successfully. An OTP code has been sent to your mail.",
+      message: "Participant registered successfully. An OTP code has been sent to your mail.",
     });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 
 
