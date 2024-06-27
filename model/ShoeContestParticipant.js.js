@@ -24,6 +24,6 @@ const ShoeContestParticipantSchema = new mongoose.Schema({
   otp: { type: String },
 });
 
-ShoeContestParticipantSchema.index({ email: 1, user: 1 }, { unique: true }); // Ensure unique email per user
+ShoeContestParticipantSchema.index({ email: 1, user: 1 }, { unique: true }); 
 
 module.exports = mongoose.model("ShoeContestParticipant", ShoeContestParticipantSchema);
