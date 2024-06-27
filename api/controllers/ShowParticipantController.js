@@ -9,12 +9,6 @@ exports.ParticipantRegister = async (req, res) => {
     return res.status(400).json({ message: "Please enter all fields" });
   }
 
-  if (password !== confirmPassword) {
-    return res
-      .status(401)
-      .json({ message: "Password and confirm password do not match" });
-  }
-
   try {
     let participant = await ParticipantModel.findOne({ $or: [{ email }, { phone }] });
     let token;
@@ -42,7 +36,6 @@ exports.ParticipantRegister = async (req, res) => {
         });
       }
     }
-
     const otp = generateOtp();
     console.log("OTP sent", otp);
     participant = new ParticipantModel({
