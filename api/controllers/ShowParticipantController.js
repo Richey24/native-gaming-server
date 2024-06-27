@@ -5,7 +5,7 @@ const { sendOtp } = require("../../utils/sendMail.js");
 exports.ParticipantRegister = async (req, res) => {
   const { firstname, lastname, password, confirmPassword, email, phone, gender } = req.body;
 
-  if (!firstname || !lastname || !password || !email || !confirmPassword || !phone || !gender) {
+  if (!firstname || !lastname ||  !email || !phone || !gender) {
     return res.status(400).json({ message: "Please enter all fields" });
   }
 
@@ -22,7 +22,7 @@ exports.ParticipantRegister = async (req, res) => {
 
     if (participant) {
       if (!participant.isVerified) {
-        const otp = generateOtp();g
+        const otp = generateOtp();
         participant.otp = otp;
         await participant.save();
         sendOtp(participant.email, participant.organizationName, otp, "participant");
