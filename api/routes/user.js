@@ -27,5 +27,6 @@ router.put(
   authMiddleware,
   asyncHandler(userController.changePassword)
 );
+router.post("/logout", authMiddleware, asyncHandler(userController.logout));
 
 module.exports = router;
