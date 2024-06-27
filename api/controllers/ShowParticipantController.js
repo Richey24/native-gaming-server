@@ -3,46 +3,69 @@ const generateOtp = require("../../utils/generateOtp.js");
 const { sendOtp } = require("../../utils/sendMail.js");
 
 exports.ParticipantRegister = async (req, res) => {
-  const { firstname, lastname, password, confirmPassword, email } = req.body;
+  const { firstname, lastname, password, confirmPassword, email, phone, gender } = req.body;
 
-  if (!firstname || !lastname || !password || !email || !confirmPassword) {
+  if (!firstname || !lastname || !password || !email || !confirmPassword || !phone || !gender) {
     return res.status(400).json({ message: "Please enter all fields" });
   }
 
   if (password !== confirmPassword) {
     return res
       .status(401)
-      .json({ message: "password and confirm password do not match" });
+      .json({ message: "Password and confirm password do not match" });
   }
+
   try {
-    let participant = await ParticipantModel.findOne({ email });
+    let participant = await ParticipantModel.findOne({ $or: [{ email }, { phone }] });
     let token;
     let participantWithoutPassword;
+
     if (participant) {
-      return res
-        .status(400)
-        .json({
-          message: "This user is already participating in this contest",
+      if (!participant.isVerified) {
+        const otp = generateOtp();
+        participant.otp = otp;
+        await participant.save();
+        await sendOtp(participant.email, participant.organizationName, otp, "participant");
+        return res.status(200).json({
+          message: "Participant is already registered but not verified. A new OTP has been sent to your email.",
         });
+      }
+      if (participant.email === email) {
+        return res.status(400).json({
+          message: "This user is already participating in this contest with this email",
+        });
+      }
+      if (participant.phone === phone) {
+        return res.status(400).json({
+          message: "This phone number is already associated with another participant",
+        });
+      }
     }
+
     const otp = generateOtp();
-    console.log("otp sent", otp);
+    console.log("OTP sent", otp);
     participant = new ParticipantModel({
       firstname,
       lastname,
       password,
       email,
+      phone,
+      gender,
       otp,
     });
     await participant.save();
     await sendOtp(participant.email, participant.organizationName, otp, "participant");
+
     participantWithoutPassword = {
       _id: participant._id,
       firstname: participant.firstname,
       lastname: participant.lastname,
       email: participant.email,
+      phone: participant.phone,
+      gender: participant.gender,
       isVerified: participant.isVerified,
     };
+
     res.status(201).json({
       participant: participantWithoutPassword,
       token: token,
@@ -54,6 +77,8 @@ exports.ParticipantRegister = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+
 
 exports.verifyOtp = async (req, res) => {
   const { email, otp } = req.body;
