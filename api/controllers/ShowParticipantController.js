@@ -5,7 +5,7 @@ const { sendOtp } = require("../../utils/sendMail.js");
 exports.ParticipantRegister = async (req, res) => {
   const { firstname, lastname, password, confirmPassword, email, phone, gender } = req.body;
 
-  if (!firstname || !lastname ||  !email || !phone || !gender) {
+  if (!firstname || !lastname || !email || !phone || !gender) {
     return res.status(400).json({ message: "Please enter all fields" });
   }
 
@@ -36,6 +36,7 @@ exports.ParticipantRegister = async (req, res) => {
         });
       }
     }
+
     const otp = generateOtp();
     console.log("OTP sent", otp);
     participant = new ParticipantModel({
@@ -72,8 +73,6 @@ exports.ParticipantRegister = async (req, res) => {
 };
 
 
-
-
 exports.verifyOtp = async (req, res) => {
   const { email, otp } = req.body;
 
@@ -91,7 +90,7 @@ exports.verifyOtp = async (req, res) => {
     await participant.save();
     res
       .status(200)
-      .json({ message: "Account verified successfully",  });
+      .json({ message: "Account verification successfully",  });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
