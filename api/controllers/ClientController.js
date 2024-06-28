@@ -1,6 +1,7 @@
 const Client = require("../../model/Client");
 const User = require("../../model/User");
 const bcrypt = require("bcrypt");
+const validatePassword = require("../../utils/validatePassword");
 const jwt = require("jsonwebtoken");
 
 exports.registerClient = async (req, res) => {
@@ -9,29 +10,47 @@ exports.registerClient = async (req, res) => {
 
   if (!userId) {
     return res.status(400).json({ message: "Vendor id is required" });
-  } else if (!email) {
+  }
+  if (!email) {
     return res.status(400).json({ message: "Email is required" });
-  } else if (!fullname) {
+  }
+  if (!fullname) {
     return res.status(400).json({ message: "Fullname is required" });
   }
-
+  if (!validatePassword(password)) {
+    return res.status(400).json({
+      message:
+        "Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one digit, and one special character.",
+    });
+  }
+  if (!password || !confirmPassword) {
+    return res
+      .status(400)
+      .json({ message: "Password and confirm password are required" });
+  }
   if (password !== confirmPassword) {
     return res
       .status(401)
-      .json({ message: "password and confirm password do not match" });
+      .json({ message: "Password and confirm password do not match" });
   }
   try {
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "Vendor not found" });
     }
-
     const existingClient = await Client.findOne({ email, user: userId });
     if (existingClient) {
       return res
         .status(400)
         .json({ message: "Client already registered under this vendor" });
     }
+
+    // const clientExists = await Client.findOne({ email, user: { $ne: userId } });
+    // if (clientExists) {
+    //   return res
+    //     .status(400)
+    //     .json({ message: "Email is already in use under a different vendor" });
+    // }
     const hashedPassword = await bcrypt.hash(password, 8);
 
     const client = new Client({
@@ -42,7 +61,6 @@ exports.registerClient = async (req, res) => {
       user: userId,
     });
     await client.save();
-
     user.clients.push(client._id);
     await user.save();
     res.status(201).json({ message: "Client registered successfully", client });

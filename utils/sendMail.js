@@ -74,7 +74,7 @@ const sendForgotPasswordEmail = (email, name, otp) => {
       <body>
         <div class="container">
           <div class="header">
-            <img class="logo" src="https://cdn.jsdelivr.net/gh/Richey24/imarket-cdn/src/assets/images/logo.png" alt="Company Logo">
+            <img class="logo" src="https://absa7kzimnaf.blob.core.windows.net/newcontainer/4bd838367ba7342586fb35a34d837827" alt="Company Logo">
             <h1 style="color: #333333;">Reset Password Request</h1>
           </div>
           <div class="message">
@@ -200,7 +200,7 @@ const sendOtp = (email, name, otp, type) => {
       <body>
         <div class="container">
           <div class="header">
-            <img class="logo" src="https://cdn.jsdelivr.net/gh/Richey24/imarket-cdn/src/assets/images/logo.png" alt="Company Logo">
+            <img class="logo" src="https://absa7kzimnaf.blob.core.windows.net/newcontainer/4bd838367ba7342586fb35a34d837827" alt="Company Logo">
             <h1 style="color: #333333;">Welcome as a New ${
               type === "vendor" ? "Vendor" : "Member"
             }!</h1>
@@ -311,7 +311,7 @@ const sendAdminWelcomeMail = (email, name) => {
 <body>
 <div class="container">
   <div class="header">
-    <img class="logo" src="https://cdn.jsdelivr.net/gh/Richey24/imarket-cdn/src/assets/images/logo.png" alt="Company Logo">
+    <img class="logo" src="https://absa7kzimnaf.blob.core.windows.net/newcontainer/4bd838367ba7342586fb35a34d837827" alt="Company Logo">
   </div>
   <div class="message">
     <p>Dear ${name},</p>
