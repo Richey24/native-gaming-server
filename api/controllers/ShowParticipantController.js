@@ -19,7 +19,7 @@ exports.ParticipantRegister = async (req, res) => {
         const otp = generateOtp();
         participant.otp = otp;
         await participant.save();
-        sendOtp(participant.email, participant.organizationName, otp, "participant");
+        sendOtp(participant.email, participant.firstname, otp, "participant");
         return res.status(200).json({
           status: "not_verified",
           message: "Participant is already registered but not verified. A new OTP has been sent to your email.",
@@ -49,7 +49,7 @@ exports.ParticipantRegister = async (req, res) => {
       otp,
     });
     await participant.save();
-    await sendOtp(participant.email, participant.organizationName, otp, "participant");
+    await sendOtp(participant.email, participant.firstname, otp, "participant");
 
     participantWithoutPassword = {
       _id: participant._id,
