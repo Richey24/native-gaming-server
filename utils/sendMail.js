@@ -136,6 +136,9 @@ const sendOtp = (email, name, otp, type) => {
   } else if (type === "admin") {
     subject = "Native Gaming";
     introMessage = `<p>We are thrilled to welcome you as an Admin on our vibrant and dynamic Gaming platform.</p>`;
+  } else if (type === "participant"){
+    subject = "Hops Contest";
+    introMessage = `<p>We are thrilled to welcome you to Hops Contest</p>`;
   }
   const mailOptions = {
     from: process.env.EMAIL,
