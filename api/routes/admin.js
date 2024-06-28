@@ -36,6 +36,11 @@ router.get(
   asyncHandler(adminController.getAllVendors)
 );
 router.get(
+  "/get-single-vendor",
+  authAdmin,
+  asyncHandler(adminController.getUserWithClients)
+);
+router.get(
   "/get-admins",
   authAdmin,
   asyncHandler(adminController.getAllAdmins)
