@@ -283,6 +283,12 @@ exports.getUserDetails = async (req, res) => {
 exports.changePassword = async (req, res) => {
   const { oldPassword, newPassword, confirmPassword } = req.body;
 
+  if (!validatePassword(newPassword)) {
+    return res.status(400).json({
+      message:
+        "Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one digit, and one special character.",
+    });
+  }
   if (newPassword !== confirmPassword) {
     return res
       .status(401)
