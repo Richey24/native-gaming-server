@@ -17,6 +17,11 @@ const ClientSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please include your password"],
     },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true, // Ensure googleId is unique but can be null
+    },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -26,6 +31,12 @@ const ClientSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-ClientSchema.index({ email: 1, user: 1 }, { unique: true }); // Ensure unique email per user
+const Client = mongoose.model("Client", ClientSchema);
 
-module.exports = mongoose.model("Client", ClientSchema);
+Client.on("index", function (error) {
+  // Check for index errors
+  if (error) {
+    console.error("Indexing error: ", error);
+  }
+});
+module.exports = Client;

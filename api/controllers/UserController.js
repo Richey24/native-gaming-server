@@ -5,6 +5,7 @@ const generateOtp = require("../../utils/generateOtp");
 const { sendOtp, sendForgotPasswordEmail } = require("../../utils/sendMail");
 const admin = require("../../firebaseAdmin");
 const Client = require("../../model/Client");
+const validatePassword = require("../../utils/validatePassword");
 
 exports.vendorRegister = async (req, res) => {
   const {
@@ -28,6 +29,12 @@ exports.vendorRegister = async (req, res) => {
   ) {
     return res.status(400).json({ message: "Please enter all fields" });
   }
+  if (!validatePassword(password)) {
+    return res.status(400).json({
+      message:
+        "Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one digit, and one special character.",
+    });
+  }
 
   if (password !== confirmPassword) {
     return res
@@ -39,12 +46,27 @@ exports.vendorRegister = async (req, res) => {
     let token;
     let userWithoutPassword;
     if (user) {
-      return res
-        .status(400)
-        .json({ message: "Email is tied to an existing Organization" });
+      if (!user.isVerified) {
+        const otp = generateOtp();
+        user.otp = otp;
+        await participant.save();
+        sendOtp(user.email, user.organizationName, otp, "vendor");
+        return res.status(200).json({
+          status: "not_verified",
+          message:
+            "User is already registered but not verified. A new OTP has been sent to your email.",
+        });
+      }
+      if (user.email === email) {
+        return res
+          .status(400)
+          .json({ message: "Email is tied to an existing Organization" });
+      }
     }
+
     const otp = generateOtp();
     console.log("otp sent", otp);
+
     user = new User({
       firstname,
       lastname,
@@ -219,6 +241,21 @@ exports.updateUserInfo = async (req, res) => {
   const id = req.user._id;
   // const { id } = req.params;
   const updateFields = { ...req.body };
+  delete updateFields.email;
+
+  if (updateFields.organizationName) {
+    const organizationExists = await User.findOne({
+      organizationName: updateFields.organizationName,
+    });
+    if (
+      organizationExists &&
+      organizationExists._id.toString() !== id.toString()
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Organization name already exists" });
+    }
+  }
   try {
     const updatedUser = await User.findByIdAndUpdate(
       id,
