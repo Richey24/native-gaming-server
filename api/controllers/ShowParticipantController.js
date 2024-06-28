@@ -3,7 +3,7 @@ const generateOtp = require("../../utils/generateOtp.js");
 const { sendOtp } = require("../../utils/sendMail.js");
 
 exports.ParticipantRegister = async (req, res) => {
-  const { firstname, lastname, password, confirmPassword, email, phone, gender } = req.body;
+  const { firstname, lastname, email, phone, gender } = req.body;
 
   if (!firstname || !lastname || !email || !phone || !gender) {
     return res.status(400).json({ message: "Please enter all fields" });
