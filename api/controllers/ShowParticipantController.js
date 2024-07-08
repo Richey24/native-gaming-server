@@ -3,14 +3,16 @@ const generateOtp = require("../../utils/generateOtp.js");
 const { sendOtp } = require("../../utils/sendMail.js");
 
 exports.ParticipantRegister = async (req, res) => {
-  const { firstname, lastname, email, phone, gender } = req.body;
+  const { firstname, lastname, email, phone, gender, shoeSize } = req.body;
 
-  if (!firstname || !lastname || !email || !phone || !gender) {
+  if (!firstname || !lastname || !email || !phone || !gender || !shoeSize) {
     return res.status(400).json({ message: "Please enter all fields" });
   }
 
   try {
-    let participant = await ParticipantModel.findOne({ $or: [{ email }, { phone }] });
+    let participant = await ParticipantModel.findOne({
+      $or: [{ email }, { phone }],
+    });
     let token;
     let participantWithoutPassword;
 
@@ -22,17 +24,20 @@ exports.ParticipantRegister = async (req, res) => {
         sendOtp(participant.email, participant.firstname, otp, "participant");
         return res.status(200).json({
           status: "not_verified",
-          message: "Participant is already registered but not verified. A new OTP has been sent to your email.",
+          message:
+            "Participant is already registered but not verified. A new OTP has been sent to your email.",
         });
       }
       if (participant.email === email) {
         return res.status(400).json({
-          message: "This user is already participating in this contest with this email",
+          message:
+            "This user is already participating in this contest with this email",
         });
       }
       if (participant.phone === phone) {
         return res.status(400).json({
-          message: "This phone number is already associated with another participant",
+          message:
+            "This phone number is already associated with another participant",
         });
       }
     }
@@ -47,6 +52,7 @@ exports.ParticipantRegister = async (req, res) => {
       phone,
       gender,
       otp,
+      shoeSize,
     });
     await participant.save();
     await sendOtp(participant.email, participant.firstname, otp, "participant");
@@ -59,19 +65,20 @@ exports.ParticipantRegister = async (req, res) => {
       phone: participant.phone,
       gender: participant.gender,
       isVerified: participant.isVerified,
+      shoeSize: participant.shoeSize,
     };
 
     res.status(201).json({
       participant: participantWithoutPassword,
       token: token,
-      message: "Participant registered successfully. An OTP code has been sent to your mail.",
+      message:
+        "Participant registered successfully. An OTP code has been sent to your mail.",
     });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 };
-
 
 exports.verifyOtp = async (req, res) => {
   const { email, otp } = req.body;
@@ -88,9 +95,7 @@ exports.verifyOtp = async (req, res) => {
     participant.isVerified = true;
     participant.otp = undefined;
     await participant.save();
-    res
-      .status(200)
-      .json({ message: "Account verification successfully",  });
+    res.status(200).json({ message: "Account verification successfully" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });

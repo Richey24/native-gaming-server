@@ -13,8 +13,11 @@ const ShoeContestParticipantSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please include your gender"],
   },
+  shoesSize: {
+    type: string,
+  },
   phone: {
-    type: String, 
+    type: String,
   },
   email: {
     type: String,
@@ -24,6 +27,9 @@ const ShoeContestParticipantSchema = new mongoose.Schema({
   otp: { type: String },
 });
 
-ShoeContestParticipantSchema.index({ email: 1, user: 1 }, { unique: true }); 
+ShoeContestParticipantSchema.index({ email: 1, user: 1 }, { unique: true });
 
-module.exports = mongoose.model("ShoeContestParticipant", ShoeContestParticipantSchema);
+module.exports = mongoose.model(
+  "ShoeContestParticipant",
+  ShoeContestParticipantSchema
+);
