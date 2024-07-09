@@ -6,6 +6,7 @@ const { sendOtp, sendForgotPasswordEmail } = require("../../utils/sendMail");
 const admin = require("../../firebaseAdmin");
 const Client = require("../../model/Client");
 const validatePassword = require("../../utils/validatePassword");
+const Game = require("../../model/Game");
 
 exports.vendorRegister = async (req, res) => {
   const {
@@ -340,5 +341,88 @@ exports.logout = async (req, res) => {
   } catch (error) {
     console.error("Error logging out:", error);
     res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+exports.createDomainName = async (req, res) => {
+  const userId = req.user._id;
+  const { domainName } = req.body;
+
+  if (!domainName) {
+    return res.status(400).json({ message: "Domain name is required" });
+  }
+
+  try {
+    const existingUser = await User.findOne({ domainName });
+    if (existingUser) {
+      return res.status(400).json({ message: "Domain name already exists" });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { domainName },
+      { new: true, runValidators: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({ message: "Domain name added successfully", user });
+  } catch (error) {
+    console.error("Error logging out:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+exports.subscribeToGame = async (req, res) => {
+  const userId = req.user._id;
+  const { gameId } = req.body;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const game = await Game.findById(gameId);
+    if (!game) {
+      return res.status(404).json({ message: "Game not found" });
+    }
+
+    if (user.subscribedGames.includes(gameId)) {
+      return res
+        .status(400)
+        .json({ message: "Already subscribed to this game" });
+    }
+
+    user.subscribedGames.push(gameId);
+    game.numberOfParticipants += 1;
+
+    await user.save();
+    await game.save();
+
+    res.status(200).json({ message: "Subscribed to game successfully", game });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+exports.listOfPlayers = async (req, res) => {
+  const { gameId } = req.params;
+  const userId = req.user._id;
+
+  try {
+    const user = await User.findById(userId).populate({
+      path: "clients",
+      match: { playedGames: gameId },
+    });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({ clients: user.clients });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
 };

@@ -28,5 +28,20 @@ router.put(
   asyncHandler(userController.changePassword)
 );
 router.post("/logout", authMiddleware, asyncHandler(userController.logout));
+router.put(
+  "/add-domain",
+  authMiddleware,
+  asyncHandler(userController.createDomainName)
+);
+router.post(
+  "/subscribe-game",
+  authMiddleware,
+  asyncHandler(userController.subscribeToGame)
+);
+router.get(
+  "/list-players",
+  authMiddleware,
+  asyncHandler(userController.listOfPlayers)
+);
 
 module.exports = router;
