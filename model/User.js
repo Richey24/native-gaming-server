@@ -62,6 +62,17 @@ const UserSchema = new mongoose.Schema(
         ref: "Client",
       },
     ],
+    domainName: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+    subscribedGames: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Game",
+      },
+    ],
   },
   { timestamps: true }
 );
@@ -73,18 +84,6 @@ UserSchema.pre("save", async function (next) {
     if (user.isModified("password")) {
       user.password = await bcrypt.hash(user.password, 8);
     }
-
-    // var token = jwt.sign(
-    //   {
-    //     _id: user._id,
-    //     firstname: user.firstname,
-    //     lastname: user.lastname,
-    //     email: user.email,
-    //   },
-    //   "secret"
-    // );
-    // user.tokens = user.tokens.concat({ token });
-    // return token;
     next();
   } catch (err) {
     next(err);

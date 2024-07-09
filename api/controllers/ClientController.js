@@ -3,6 +3,7 @@ const User = require("../../model/User");
 const bcrypt = require("bcrypt");
 const validatePassword = require("../../utils/validatePassword");
 const jwt = require("jsonwebtoken");
+const admin = require("../../firebaseAdmin");
 
 exports.registerClient = async (req, res) => {
   const { userId, fullname, country, email, password, confirmPassword } =
@@ -100,5 +101,42 @@ exports.loginClient = async (req, res) => {
   } catch (error) {
     console.error("Error logging in client:", error);
     res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+exports.socialRegisterClient = async (req, res) => {
+  const { token, user, userId } = req.body;
+  try {
+    await admin.auth().verifyIdToken(token);
+    const { uid, email, displayName, logo } = user;
+
+    const vendor = await User.findById(userId);
+    if (!vendor) {
+      return res.status(404).json({ message: "Vendor not found" });
+    }
+    const existingClient = await Client.findOne({ email, user: userId });
+    if (existingClient) {
+      if (!existingClient.googleId) {
+        existingClient.googleId = uid;
+        await existingClient.save();
+      }
+    } else {
+      existingClient = new Client({
+        googleId: uid,
+        email,
+        fullname: displayName,
+        logo,
+      });
+      await existingUser.save();
+    }
+
+    const jwtToken = await existingClient.generateAuthToken();
+    res.status(201).json({
+      user: existingClient,
+      token: jwtToken,
+      message: "Client registered successfully.",
+    });
+  } catch (error) {
+    res.status(400).json({ message: "Google authentication failed", error });
   }
 };

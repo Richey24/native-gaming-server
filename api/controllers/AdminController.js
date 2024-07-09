@@ -2,6 +2,7 @@ const Adminuser = require("../../model/Admin");
 const jwt = require("jsonwebtoken");
 const User = require("../../model/User");
 const Client = require("../../model/Client");
+const Game = require("../../model/Game");
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;
@@ -133,5 +134,17 @@ exports.getUserWithClients = async (req, res) => {
   } catch (error) {
     console.error("Error fetching user with clients:", error);
     res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+exports.createGame = async (req, res) => {
+  const { title, description, image } = req.body;
+  try {
+    const game = new Game({ title, description, image });
+    await game.save();
+    res.status(201).json({ message: "Game created successfully", game });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
 };

@@ -6,5 +6,9 @@ const asyncHandler = require("../../config/asyncHandler");
 
 router.post("/register", asyncHandler(clientController.registerClient));
 router.post("/login", asyncHandler(clientController.loginClient));
+router.post(
+  "google-register",
+  asyncHandler(clientController.socialRegisterClient)
+);
 
 module.exports = router;

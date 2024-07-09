@@ -45,5 +45,10 @@ router.get(
   authAdmin,
   asyncHandler(adminController.getAllAdmins)
 );
+router.post(
+  "/create-game",
+  authAdmin,
+  asyncHandler(adminController.createGame)
+);
 
 module.exports = router;
