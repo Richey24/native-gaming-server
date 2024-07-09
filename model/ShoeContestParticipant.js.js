@@ -14,7 +14,7 @@ const ShoeContestParticipantSchema = new mongoose.Schema({
     required: [true, "Please include your gender"],
   },
   shoesSize: {
-    type: string,
+    type: String,
   },
   phone: {
     type: String,
