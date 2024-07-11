@@ -34,6 +34,7 @@ const adminSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
 const MAX_TOKENS = 5;
 adminSchema.pre("save", async function () {
   const user = this;

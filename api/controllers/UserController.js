@@ -1,12 +1,15 @@
 const User = require("../../model/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
 const generateOtp = require("../../utils/generateOtp");
 const { sendOtp, sendForgotPasswordEmail } = require("../../utils/sendMail");
 const admin = require("../../firebaseAdmin");
 const Client = require("../../model/Client");
 const validatePassword = require("../../utils/validatePassword");
 const Game = require("../../model/Game");
+const UserGameSubscription = require("../../model/GameSubscription");
+const ClientGamePlay = require("../../model/ClientGamePlay");
 
 exports.vendorRegister = async (req, res) => {
   const {
@@ -376,8 +379,11 @@ exports.createDomainName = async (req, res) => {
 
 exports.subscribeToGame = async (req, res) => {
   const userId = req.user._id;
-  const { gameId } = req.body;
+  const { gameId, subscriptionType } = req.body;
 
+  if (!mongoose.Types.ObjectId.isValid(gameId)) {
+    return res.status(400).json({ message: "Invalid game ID" });
+  }
   try {
     const user = await User.findById(userId);
     if (!user) {
@@ -388,41 +394,59 @@ exports.subscribeToGame = async (req, res) => {
     if (!game) {
       return res.status(404).json({ message: "Game not found" });
     }
-
-    if (user.subscribedGames.includes(gameId)) {
-      return res
-        .status(400)
-        .json({ message: "Already subscribed to this game" });
+    let subscriptionEndDate;
+    const now = new Date();
+    if (subscriptionType === "monthly") {
+      subscriptionEndDate = new Date(now.setMonth(now.getMonth() + 1));
+    } else if (subscriptionType === "yearly") {
+      subscriptionEndDate = new Date(now.setFullYear(now.getFullYear() + 1));
+    } else {
+      return res.status(400).json({ message: "Invalid subscription type" });
     }
-
-    user.subscribedGames.push(gameId);
+    const newSubscription = new UserGameSubscription({
+      user: userId,
+      game: gameId,
+      subscriptionType,
+      subscriptionEndDate,
+    });
+    await newSubscription.save();
     game.numberOfParticipants += 1;
-
-    await user.save();
     await game.save();
 
-    res.status(200).json({ message: "Subscribed to game successfully", game });
+    res.status(201).json({
+      message: "Subscribed to game successfully",
+      subscription: newSubscription,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-exports.listOfPlayers = async (req, res) => {
-  const { gameId } = req.params;
-  const userId = req.user._id;
+exports.getClientsWhoPlayedGame = async (req, res) => {
+  const userId = req.user._id; // Assuming user is authenticated
+  const { gameId } = req.query;
 
+  if (!mongoose.Types.ObjectId.isValid(gameId)) {
+    return res.status(400).json({ message: "Invalid game ID" });
+  }
   try {
-    const user = await User.findById(userId).populate({
-      path: "clients",
-      match: { playedGames: gameId },
+    const userSubscription = await UserGameSubscription.findOne({
+      user: userId,
+      game: gameId,
     });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    if (!userSubscription) {
+      return res
+        .status(404)
+        .json({ message: "User is not subscribed to this game" });
     }
-    res.status(200).json({ clients: user.clients });
+
+    const gamePlays = await ClientGamePlay.find({ game: gameId }).populate(
+      "client"
+    );
+    res.status(200).json({ clients: gamePlays.map((play) => play.client) });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Error fetching clients who played game:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };

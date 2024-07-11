@@ -30,12 +30,12 @@ const ClientSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    playedGames: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Game",
-      },
-    ],
+    // playedGames: [
+    //   {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: "Game",
+    //   },
+    // ],
   },
   { timestamps: true }
 );

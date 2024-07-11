@@ -3,7 +3,10 @@ const User = require("../../model/User");
 const bcrypt = require("bcrypt");
 const validatePassword = require("../../utils/validatePassword");
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
 const admin = require("../../firebaseAdmin");
+const Game = require("../../model/Game");
+const ClientGamePlay = require("../../model/ClientGamePlay");
 
 exports.registerClient = async (req, res) => {
   const { userId, fullname, country, email, password, confirmPassword } =
@@ -138,5 +141,36 @@ exports.socialRegisterClient = async (req, res) => {
     });
   } catch (error) {
     res.status(400).json({ message: "Google authentication failed", error });
+  }
+};
+
+exports.playGame = async (req, res) => {
+  const { gameId } = req.body;
+  const clientId = req.client._id;
+
+  if (!mongoose.Types.ObjectId.isValid(gameId)) {
+    return res.status(400).json({ message: "Invalid game ID" });
+  }
+  try {
+    const game = await Game.findById(gameId);
+    if (!game) {
+      return res.status(404).json({ message: "Game not found" });
+    }
+
+    const clientGamePlay = new ClientGamePlay({
+      client: clientId,
+      game: gameId,
+    });
+
+    await clientGamePlay.save();
+    game.numberOfPlayers += 1;
+    await game.save();
+
+    res
+      .status(201)
+      .json({ message: "Game played successfully", gamePlay: clientGamePlay });
+  } catch (error) {
+    console.error("Error playing game:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
