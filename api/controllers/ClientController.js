@@ -117,7 +117,8 @@ exports.socialRegisterClient = async (req, res) => {
     if (!vendor) {
       return res.status(404).json({ message: "Vendor not found" });
     }
-    const existingClient = await Client.findOne({ email, user: userId });
+    let existingClient = await Client.findOne({ email, user: userId });
+    console.log(existingClient);
     if (existingClient) {
       if (!existingClient.googleId) {
         existingClient.googleId = uid;
@@ -131,7 +132,9 @@ exports.socialRegisterClient = async (req, res) => {
         logo,
         user: userId,
       });
-      await existingUser.save();
+      await existingClient.save();
+      vendor.clients.push(existingClient._id);
+      await vendor.save();
     }
 
     const jwtToken = await existingClient.generateAuthToken();
