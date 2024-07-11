@@ -15,7 +15,7 @@ const ClientSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: [true, "Please include your password"],
+      // required: [true, "Please include your password"],
     },
     googleId: {
       type: String,
