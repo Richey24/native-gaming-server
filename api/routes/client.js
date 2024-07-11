@@ -38,7 +38,7 @@ const clientAuthMiddleware = async (req, res, next) => {
 router.post("/register", asyncHandler(clientController.registerClient));
 router.post("/login", asyncHandler(clientController.loginClient));
 router.post(
-  "google-register",
+  "/google-register",
   asyncHandler(clientController.socialRegisterClient)
 );
 router.post(
