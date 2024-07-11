@@ -89,7 +89,7 @@ exports.getAllVendors = async (req, res) => {
         logo: user.logo,
         phone: user.phone,
         description:
-          user.title ??
+          user.description ??
           "If everything I did failed - which it doesn't, I think that it actually succeeds.",
         about: user.about,
         googleId: user.googleId,
@@ -139,7 +139,7 @@ exports.getUserWithClients = async (req, res) => {
 
 exports.createGame = async (req, res) => {
   const { title, description, image, price, subscriptionPlan } = req.body;
-  if (!title || !description || !image || !price || !subscriptionPlan) {
+  if (!title || !description || !image || !subscriptionPlan) {
     return res.status(400).json({ message: "All fields are required" });
   }
   try {
