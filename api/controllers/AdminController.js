@@ -89,7 +89,7 @@ exports.getAllVendors = async (req, res) => {
         logo: user.logo,
         phone: user.phone,
         description:
-          user.title ??
+          user.description ??
           "If everything I did failed - which it doesn't, I think that it actually succeeds.",
         about: user.about,
         googleId: user.googleId,
