@@ -129,6 +129,7 @@ exports.socialRegisterClient = async (req, res) => {
         email,
         fullname: displayName,
         logo,
+        user: userId,
       });
       await existingUser.save();
     }
