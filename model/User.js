@@ -70,7 +70,7 @@ const UserSchema = new mongoose.Schema(
     subscribedGames: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Game",
+        ref: "UserGameSubscription",
       },
     ],
   },

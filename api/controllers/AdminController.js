@@ -138,11 +138,20 @@ exports.getUserWithClients = async (req, res) => {
 };
 
 exports.createGame = async (req, res) => {
-  const { title, description, image } = req.body;
+  const { title, description, image, price, subscriptionPlan } = req.body;
+  if (!title || !description || !image || !price || !subscriptionPlan) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
   try {
-    const game = new Game({ title, description, image });
-    await game.save();
-    res.status(201).json({ message: "Game created successfully", game });
+    const newGame = new Game({
+      title,
+      description,
+      image,
+      price,
+      subscriptionPlan,
+    });
+    await newGame.save();
+    res.status(201).json({ message: "Game created successfully", newGame });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });

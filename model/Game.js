@@ -13,6 +13,20 @@ const GameSchema = new mongoose.Schema(
     image: {
       type: String,
     },
+    price: {
+      type: Number,
+      required: true,
+    },
+    subscriptionPlan: {
+      monthly: {
+        type: Number,
+        required: true,
+      },
+      yearly: {
+        type: Number,
+        required: true,
+      },
+    },
     numberOfPlayers: {
       type: Number,
       default: 0,

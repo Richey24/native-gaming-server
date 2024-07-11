@@ -41,7 +41,7 @@ router.post(
 router.get(
   "/list-players",
   authMiddleware,
-  asyncHandler(userController.listOfPlayers)
+  asyncHandler(userController.getClientsWhoPlayedGame)
 );
 
 module.exports = router;
