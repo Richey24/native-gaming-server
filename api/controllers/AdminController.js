@@ -139,7 +139,7 @@ exports.getUserWithClients = async (req, res) => {
 
 exports.createGame = async (req, res) => {
   const { title, description, image, price, subscriptionPlan } = req.body;
-  if (!title || !description || !image || !price || !subscriptionPlan) {
+  if (!title || !description || !image || !subscriptionPlan) {
     return res.status(400).json({ message: "All fields are required" });
   }
   try {
