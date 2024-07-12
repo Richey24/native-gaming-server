@@ -15,7 +15,7 @@ const clientAuthMiddleware = async (req, res, next) => {
         .status(401)
         .json({ message: "No token, authorization denied" });
     }
-    const decoded = jwt.verify(token, "secret");
+    const decoded = jwt.verify(token, "Clientsecret");
     req.client = decoded._id;
 
     const user = await Client.findOne({

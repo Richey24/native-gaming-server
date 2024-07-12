@@ -1,4 +1,6 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 const ClientSchema = new mongoose.Schema(
   {
@@ -30,6 +32,14 @@ const ClientSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    tokens: [
+      {
+        token: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
     // playedGames: [
     //   {
     //     type: mongoose.Schema.Types.ObjectId,
@@ -39,7 +49,35 @@ const ClientSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+const MAX_TOKENS = 5;
+ClientSchema.methods.generateAuthToken = async function () {
+  const user = this;
+  let options = {};
 
+  // Set token to expire in 1 hour in production mode
+  if (process.env.NODE_ENV !== "development") {
+    options.expiresIn = "1h";
+  } else {
+    options.expiresIn = "5d";
+  }
+
+  const token = jwt.sign(
+    {
+      _id: user._id,
+      fullname: user.fullname,
+      email: user.email,
+    },
+    "Clientsecret",
+    options
+  );
+  user.tokens = user.tokens.concat({ token });
+  if (user.tokens.length > MAX_TOKENS) {
+    user.tokens = user.tokens.slice(user.tokens.length - MAX_TOKENS);
+  }
+  await user.save();
+
+  return token;
+};
 const Client = mongoose.model("Client", ClientSchema);
 
 Client.on("index", function (error) {

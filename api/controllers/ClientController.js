@@ -67,7 +67,12 @@ exports.registerClient = async (req, res) => {
     await client.save();
     user.clients.push(client._id);
     await user.save();
-    res.status(201).json({ message: "Client registered successfully", client });
+    let jwtToken = await client.generateAuthToken();
+    res.status(201).json({
+      message: "Client registered successfully",
+      token: jwtToken,
+      client,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
@@ -92,13 +97,7 @@ exports.loginClient = async (req, res) => {
       country: client.country,
       email: client.email,
     };
-    const token = jwt.sign(
-      { id: client._id, user: userId, email: email },
-      "client secret",
-      {
-        expiresIn: "1h",
-      }
-    );
+    const token = client.generateAuthToken();
 
     res.status(200).json({ user: userWithoutPassword, token });
   } catch (error) {
@@ -118,7 +117,6 @@ exports.socialRegisterClient = async (req, res) => {
       return res.status(404).json({ message: "Vendor not found" });
     }
     let existingClient = await Client.findOne({ email, user: userId });
-    console.log(existingClient);
     if (existingClient) {
       if (!existingClient.googleId) {
         existingClient.googleId = uid;
@@ -137,8 +135,9 @@ exports.socialRegisterClient = async (req, res) => {
       await vendor.save();
     }
 
-    const jwtToken = await existingClient.generateAuthToken();
-    res.status(201).json({
+    let jwtToken = await existingClient.generateAuthToken();
+
+    return res.status(201).json({
       user: existingClient,
       token: jwtToken,
       message: "Client registered successfully.",
