@@ -43,5 +43,10 @@ router.get(
   authMiddleware,
   asyncHandler(userController.getClientsWhoPlayedGame)
 );
+router.get(
+  "/all-subscribed-game",
+  authMiddleware,
+  asyncHandler(userController.getAllSubscribedGames)
+);
 
 module.exports = router;

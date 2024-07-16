@@ -36,6 +36,7 @@ const adminRouter = require("./api/routes/admin");
 const imageRouter = require("./api/routes/image");
 const showRouter = require("./api/routes/showParticipant");
 const gameRouter = require("./api/routes/game");
+const couponRouter = require("./api/routes/coupon");
 
 app.use("/api/admin", adminRouter);
 app.use("/api/user", userRouter);
@@ -43,6 +44,7 @@ app.use("/api/client", clientRouter);
 app.use("/api/show", showRouter);
 app.use("/image", imageRouter);
 app.use("/api/game", gameRouter);
+app.use("/api/coupon", couponRouter);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
