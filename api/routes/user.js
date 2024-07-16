@@ -49,4 +49,5 @@ router.get(
   asyncHandler(userController.getAllSubscribedGames)
 );
 
+router.get("/by-domain", asyncHandler(userController.getUserByDomainName));
 module.exports = router;

@@ -356,7 +356,11 @@ exports.createDomainName = async (req, res) => {
   if (!domainName) {
     return res.status(400).json({ message: "Domain name is required" });
   }
-
+  if (domainName.length < 2) {
+    return res
+      .status(400)
+      .json({ message: "Domain name cannot be less than 2 characters" });
+  }
   try {
     const existingUser = await User.findOne({ domainName });
     if (existingUser) {
@@ -388,14 +392,15 @@ exports.subscribeToGame = async (req, res) => {
   }
   try {
     const user = await User.findById(userId);
+    const game = await Game.findById(gameId);
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-
-    const game = await Game.findById(gameId);
     if (!game) {
       return res.status(404).json({ message: "Game not found" });
     }
+
     let subscriptionEndDate;
     const now = new Date();
     if (subscriptionType === "monthly") {
@@ -415,9 +420,20 @@ exports.subscribeToGame = async (req, res) => {
     game.numberOfParticipants += 1;
     await game.save();
 
+    // Add rewards to user
+    if (rewards && Array.isArray(rewards)) {
+      rewards.forEach((reward) => {
+        user.rewards.push({
+          title: reward.title,
+          image: reward.url,
+        });
+      });
+    }
+    await user.save();
     res.status(201).json({
       message: "Subscribed to game successfully",
       subscription: newSubscription,
+      rewards: user.rewards,
     });
   } catch (error) {
     console.error(error);
@@ -463,6 +479,46 @@ exports.getAllSubscribedGames = async (req, res) => {
     }
 
     res.status(200).json({ games: user.subscribedGames });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+exports.getUserByDomainName = async (req, res) => {
+  const { domainName } = req.query;
+
+  try {
+    if (!domainName) {
+      return res.status(400).json({ message: "Domain name is required" });
+    }
+    if (domainName.length < 2) {
+      return res
+        .status(400)
+        .json({ message: "Domain name cannot be less than 2 characters" });
+    }
+    const user = await User.findOne({ domainName }).populate("clients");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({
+      user: {
+        organizationName: user.organizationName,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        email: user.email,
+        logo: user.logo,
+        phone: user.phone,
+        googleId: user.googleId,
+        domainName: user.domainName,
+        clients: user.clients,
+        subscribedGames: user.subscribedGames,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+        about: user.about,
+        description: user.description,
+      },
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });

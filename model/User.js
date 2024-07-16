@@ -2,6 +2,17 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
+const RewardSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true,
+  },
+  image: {
+    type: String,
+    required: true,
+  },
+});
+
 const UserSchema = new mongoose.Schema(
   {
     organizationName: {
@@ -79,6 +90,7 @@ const UserSchema = new mongoose.Schema(
         ref: "Coupon",
       },
     ],
+    rewards: [RewardSchema],
   },
   { timestamps: true }
 );
