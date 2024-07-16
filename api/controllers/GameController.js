@@ -6,7 +6,7 @@ const Game = require("../../model/Game");
 
 exports.getAllGames = async (req, res) => {
   try {
-    const games = await Game.find();
+    const games = await Game.find().sort({ createdAt: -1 });
     res.status(200).json({ games });
   } catch (error) {
     console.error("Error fetching games:", error);

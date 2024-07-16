@@ -325,7 +325,9 @@ exports.changePassword = async (req, res) => {
 exports.getClients = async (req, res) => {
   try {
     const vendorId = req.user._id;
-    const clients = await Client.find({ user: vendorId }).select("-password");
+    const clients = await Client.find({ user: vendorId })
+      .select("-password")
+      .sort({ createdAt: -1 });
     res.status(200).json(clients);
   } catch (error) {
     console.error("Error fetching clients:", error);
@@ -441,12 +443,28 @@ exports.getClientsWhoPlayedGame = async (req, res) => {
         .json({ message: "User is not subscribed to this game" });
     }
 
-    const gamePlays = await ClientGamePlay.find({ game: gameId }).populate(
-      "client"
-    );
+    const gamePlays = await ClientGamePlay.find({ game: gameId })
+      .populate("client")
+      .sort({ createdAt: -1 });
     res.status(200).json({ clients: gamePlays.map((play) => play.client) });
   } catch (error) {
     console.error("Error fetching clients who played game:", error);
     res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+exports.getAllSubscribedGames = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const user = await User.findById(userId).populate("subscribedGames");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ games: user.subscribedGames });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 };

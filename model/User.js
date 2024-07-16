@@ -73,6 +73,12 @@ const UserSchema = new mongoose.Schema(
         ref: "UserGameSubscription",
       },
     ],
+    coupons: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Coupon",
+      },
+    ],
   },
   { timestamps: true }
 );
