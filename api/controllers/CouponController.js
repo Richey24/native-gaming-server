@@ -94,6 +94,7 @@ exports.useCoupon = async (req, res) => {
       await user.save();
     }
     sendCouponCode(coupon, email, name);
+    res.status(201).json({ message: "Coupon has been sent to your mail" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
