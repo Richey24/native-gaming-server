@@ -385,7 +385,7 @@ exports.createDomainName = async (req, res) => {
 
 exports.subscribeToGame = async (req, res) => {
   const userId = req.user._id;
-  const { gameId, subscriptionType } = req.body;
+  const { gameId, subscriptionType, rewards } = req.body;
 
   if (!mongoose.Types.ObjectId.isValid(gameId)) {
     return res.status(400).json({ message: "Invalid game ID" });
@@ -499,6 +499,7 @@ exports.getUserByDomainName = async (req, res) => {
     }
     const user = await User.findOne({ domainName }).populate("clients");
     if (!user) {
+      console.log("reached");
       return res.status(404).json({ message: "User not found" });
     }
     res.status(200).json({
@@ -517,6 +518,9 @@ exports.getUserByDomainName = async (req, res) => {
         updatedAt: user.updatedAt,
         about: user.about,
         description: user.description,
+        _id: user._id,
+        isVerified: user.isVerified,
+        isSubscribed: user.isSubscribed,
       },
     });
   } catch (err) {
