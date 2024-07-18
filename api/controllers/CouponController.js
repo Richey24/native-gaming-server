@@ -2,6 +2,7 @@ const express = require("express");
 const User = require("../../model/User");
 const Coupon = require("../../model/Coupon");
 const Client = require("../../model/Client");
+const mongoose = require("mongoose");
 const { sendCouponCode } = require("../../utils/sendMail");
 
 exports.createCoupon = async (req, res) => {
