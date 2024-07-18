@@ -417,7 +417,7 @@ const sendCouponCode = (coupon, email, name) => {
               coupon.logo ??
               "https://absa7kzimnaf.blob.core.windows.net/newcontainer/4bd838367ba7342586fb35a34d837827"
             }alt="Company Logo">
-            <h1 style="color: #333333;">Reset Password Request</h1>
+            <h1 style="color: #333333;">Coupon Mail for ${coupon.title}</h1>
           </div>
           <div class="message">
             <p>Dear ${name},</p>
