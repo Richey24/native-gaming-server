@@ -1,5 +1,5 @@
 const nodemailer = require("nodemailer");
-const formatedDate = require("../utils/formatDate");
+const formatedDate = require("./formatedDate");
 
 const sendForgotPasswordEmail = (email, name, otp) => {
   const transporter = nodemailer.createTransport({
