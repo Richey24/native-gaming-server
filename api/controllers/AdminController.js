@@ -1,8 +1,7 @@
 const Adminuser = require("../../model/Admin");
-const jwt = require("jsonwebtoken");
 const User = require("../../model/User");
-const Client = require("../../model/Client");
-const Game = require("../../model/Game");
+const mongoose = require("mongoose");
+const SubscriptionPlan = require("../../model/SubscriptionPlan");
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;
@@ -137,23 +136,78 @@ exports.getUserWithClients = async (req, res) => {
   }
 };
 
-exports.createGame = async (req, res) => {
-  const { title, description, image, price, subscriptionPlan } = req.body;
-  if (!title || !description || !image || !subscriptionPlan) {
+exports.createSubscriptionPlan = async (req, res) => {
+  const { name, type, price, durationDays } = req.body;
+  const adminId = req.admin._id;
+
+  if (!name || !type || !price) {
     return res.status(400).json({ message: "All fields are required" });
   }
+
   try {
-    const newGame = new Game({
-      title,
-      description,
-      image,
+    if (type === "one-off" && !durationDays) {
+      return res.status(400).json({
+        message: "durationDays must be greater than zero if type is one-off",
+      });
+    }
+    const newPlan = new SubscriptionPlan({
+      name,
+      type,
       price,
-      subscriptionPlan,
+      durationDays: type === "one-off" ? durationDays : undefined,
     });
-    await newGame.save();
-    res.status(201).json({ message: "Game created successfully", newGame });
+
+    await newPlan.save();
+
+    await Adminuser.findByIdAndUpdate(
+      adminId,
+      { $push: { subscriptionPlans: newPlan._id } },
+      { new: true }
+    );
+
+    res
+      .status(201)
+      .json({ message: "Subscription plan created successfully", newPlan });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Error creating subscription plan:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+exports.getAllSubscriptionPlans = async (req, res) => {
+  try {
+    const subscriptionPlans = await SubscriptionPlan.find();
+    res.status(200).json(subscriptionPlans);
+  } catch (error) {
+    console.error("Error fetching subscription plans:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+exports.editSubscriptionPlan = async (req, res) => {
+  const { planId } = req.query;
+  const { name, type, price, durationDays } = req.body;
+
+  try {
+    const plan = await SubscriptionPlan.findById(planId);
+
+    if (!plan) {
+      return res.status(404).json({ message: "Subscription plan not found" });
+    }
+
+    plan.name = name || plan.name;
+    plan.type = type || plan.type;
+    plan.price = price || plan.price;
+    if (type === "one-off") {
+      plan.durationDays = durationDays || plan.durationDays;
+    }
+
+    await plan.save();
+    res
+      .status(200)
+      .json({ message: "Subscription plan updated successfully", plan });
+  } catch (error) {
+    console.error("Error editing subscription plan:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };

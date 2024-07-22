@@ -34,7 +34,6 @@ exports.createCoupon = async (req, res) => {
       totalUsage,
       user: userId,
     });
-
     await coupon.save();
     user.coupons.push(coupon._id);
     await user.save();

@@ -45,10 +45,24 @@ router.get(
   authAdmin,
   asyncHandler(adminController.getAllAdmins)
 );
+// router.post(
+//   "/create-game",
+//   authAdmin,
+//   asyncHandler(adminController.createGame)
+// );
 router.post(
-  "/create-game",
+  "/create-subscription",
   authAdmin,
-  asyncHandler(adminController.createGame)
+  asyncHandler(adminController.createSubscriptionPlan)
+);
+router.get(
+  "/get-subscription",
+  asyncHandler(adminController.getAllSubscriptionPlans)
+);
+router.put(
+  "/edit-subscription",
+  authAdmin,
+  asyncHandler(adminController.editSubscriptionPlan)
 );
 
 module.exports = router;

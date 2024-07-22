@@ -28,10 +28,8 @@ const verifyAdmin = async (req, res, next) => {
 };
 
 router.get("/", asyncHandler(gameController.getAllGames));
-router.delete(
-  "/delete",
-  verifyAdmin,
-  asyncHandler(gameController.deleteSingleGame)
-);
+router.get("/single", asyncHandler(gameController.getGameById));
+// router.delete("/delete", verifyAdmin, asyncHandler(gameController.deleteGame));
+// router.put("/edit", verifyAdmin, asyncHandler(gameController.editGame));
 
 module.exports = router;
