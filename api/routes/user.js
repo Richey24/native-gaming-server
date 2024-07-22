@@ -55,4 +55,8 @@ router.get(
   authMiddleware,
   asyncHandler(userController.getUserGameInstances)
 );
+router.get(
+  "/get-subscription",
+  asyncHandler(userController.getAllSubscriptionPlans)
+);
 module.exports = router;
