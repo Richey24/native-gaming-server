@@ -1,42 +1,11 @@
 const mongoose = require("mongoose");
 
-const GameSchema = new mongoose.Schema(
-  {
-    title: {
-      type: String,
-      required: true,
-    },
-    description: {
-      type: String,
-      required: true,
-    },
-    image: {
-      type: String,
-    },
-    price: {
-      type: Number,
-    },
-    subscriptionPlan: {
-      monthly: {
-        type: Number,
-        required: true,
-      },
-      yearly: {
-        type: Number,
-        required: true,
-      },
-    },
-    numberOfPlayers: {
-      type: Number,
-      default: 0,
-    },
-    numberOfParticipants: {
-      type: Number,
-      default: 0,
-    },
-  },
-  { timestamps: true }
-);
+const gameSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  description: { type: String, required: true },
+  image: { type: String, required: true },
+});
 
-const Game = mongoose.model("Game", GameSchema);
-module.exports = Game;
+const Game = mongoose.model("Game", gameSchema);
+
+module.exports = { Game };

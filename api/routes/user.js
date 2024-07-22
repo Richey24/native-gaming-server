@@ -33,21 +33,26 @@ router.put(
   authMiddleware,
   asyncHandler(userController.createDomainName)
 );
-router.post(
-  "/subscribe-game",
-  authMiddleware,
-  asyncHandler(userController.subscribeToGame)
-);
-router.get(
-  "/list-players",
-  authMiddleware,
-  asyncHandler(userController.getClientsWhoPlayedGame)
-);
-router.get(
-  "/all-subscribed-game",
-  authMiddleware,
-  asyncHandler(userController.getAllSubscribedGames)
-);
+// router.get(
+//   "/list-players",
+//   authMiddleware,
+//   asyncHandler(userController.getClientsWhoPlayedGame)
+// );
 
 router.get("/by-domain", asyncHandler(userController.getUserByDomainName));
+router.post(
+  "/subscribe",
+  authMiddleware,
+  asyncHandler(userController.subscribeToPlan)
+);
+router.post(
+  "/create-game-instance",
+  authMiddleware,
+  asyncHandler(userController.createGameInstance)
+);
+router.get(
+  "/all-game-instance",
+  authMiddleware,
+  asyncHandler(userController.getUserGameInstances)
+);
 module.exports = router;

@@ -31,6 +31,10 @@ const adminSchema = new mongoose.Schema(
         },
       },
     ],
+    subscriptionPlans: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "SubscriptionPlan" },
+    ],
+    games: [{ type: mongoose.Schema.Types.ObjectId, ref: "Game" }],
   },
   { timestamps: true }
 );
@@ -41,12 +45,6 @@ adminSchema.pre("save", async function () {
   if (user.isModified("password")) {
     user.password = await bcrypt.hash(user.password, 12);
   }
-  // if (!this.isModified("password")) {
-  //   return next();
-  // }
-  // const salt = await bcrypt.genSalt(10);
-  // this.password = await bcrypt.hash(this.password, salt);
-  // next();
 });
 adminSchema.methods.generateAuthToken = async function () {
   const user = this;

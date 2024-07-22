@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-const RewardSchema = new mongoose.Schema({
+const rewardSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
@@ -11,6 +11,27 @@ const RewardSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+});
+
+const gameInstanceSchema = new mongoose.Schema({
+  game: { type: mongoose.Schema.Types.ObjectId, ref: "Game", required: true },
+  startTime: { type: Date, required: true },
+  endTime: { type: Date, required: true },
+  status: {
+    type: String,
+    enum: ["not-started", "open", "closed"],
+    default: "not started",
+  },
+  rewards: [rewardSchema],
+});
+
+const subscriptionSchema = new mongoose.Schema({
+  plan: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "SubscriptionPlan",
+    required: true,
+  },
+  subscriptionEndDate: { type: Date, required: true },
 });
 
 const UserSchema = new mongoose.Schema(
@@ -78,19 +99,14 @@ const UserSchema = new mongoose.Schema(
       unique: true,
       sparse: true,
     },
-    subscribedGames: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "UserGameSubscription",
-      },
-    ],
     coupons: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Coupon",
       },
     ],
-    rewards: [RewardSchema],
+    subscription: subscriptionSchema,
+    gameInstances: [gameInstanceSchema],
   },
   { timestamps: true }
 );

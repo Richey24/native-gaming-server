@@ -40,6 +40,7 @@ const ClientSchema = new mongoose.Schema(
         },
       },
     ],
+    gamesPlayed: [{ type: mongoose.Schema.Types.ObjectId, ref: "Game" }],
     // playedGames: [
     //   {
     //     type: mongoose.Schema.Types.ObjectId,
