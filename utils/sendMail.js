@@ -1,4 +1,5 @@
 const nodemailer = require("nodemailer");
+const formatedDate = require("../utils/formatDate");
 
 const sendForgotPasswordEmail = (email, name, otp) => {
   const transporter = nodemailer.createTransport({
@@ -366,13 +367,30 @@ const sendCouponCode = (coupon, email, name) => {
             font-family: 'Montserrat', Arial, sans-serif;
             line-height: 1.6;
           }
-          .container {
+            .coupon {
+            border: 5px dotted #bbb; /* Dotted border */
+            width: 80%;
+            border-radius: 15px; /* Rounded border */
+            margin: 0 auto; /* Center the coupon */
             max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-            border-radius: 5px;
           }
+
+          .container {
+          padding: 2px 16px;
+          background-color: #f1f1f1;
+          }
+
+        .promo {
+        background: #ccc;
+        padding: 3px;
+        }
+
+        .expire {
+        color: red;
+        }
+        .begin {
+        color: green;
+        }
           .header {
             text-align: center;
             margin-bottom: 20px;
@@ -396,43 +414,28 @@ const sendCouponCode = (coupon, email, name) => {
             margin: 0 auto;
             max-width: 200px;
           }
-          .cta-button {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: #ffffff;
-            text-decoration: none;
-            border-radius: 5px;
-          }
-          .cta-button:hover {
-            background-color: #0056b3;
-          }
         </style>
       </head>
       <body>
+        <div class="coupon">
+          <div class="container">
+              <h3>Coupon Mail for ${coupon.title}</h3>
+          </div>
+          <img src=${
+            coupon.logo ??
+            "https://absa7kzimnaf.blob.core.windows.net/newcontainer/4bd838367ba7342586fb35a34d837827"
+          } alt="Logo" style="width:100%;">
+        <div class="container" style="background-color:white">
+          <h2><b>GET ${coupon.percentageOff}% OFF YOUR PURCHASE</b></h2>
+            <h5>Dear ${name},</h5>
+            <p>${coupon.description}</p>
+          </div>
         <div class="container">
-          <div class="header">
-            <img class="logo" src=${
-              coupon.logo ??
-              "https://absa7kzimnaf.blob.core.windows.net/newcontainer/4bd838367ba7342586fb35a34d837827"
-            }alt="Company Logo">
-            <h1 style="color: #333333;">Coupon Mail for ${coupon.title}</h1>
-          </div>
-          <div class="message">
-            <p>Dear ${name},</p>
-            <p>Here is your coupon code for ${coupon.title}: <strong>${
-      coupon.code
-    }</strong>.</p>
-          </div>
-          <div class="message">
-            <p>Ignore this email if this was not requested by you.</p>
-            <p>If you need any assistance, our dedicated support team is here to help. Contact us at [support email/phone number].</p>
-          </div>
-          <div class="footer">
-            <p style="color: #777777;">This email was sent by Breaking Black Ventures, LLC. If you no longer wish to receive emails from us, please <a href="#" style="color: #777777; text-decoration: underline;">unsubscribe</a>.</p>
-          </div>
+          <p>Use Promo Code: <span class="promo">${coupon.code}</span></p>
+           <p class="begin">Expires: ${formatedDate(coupon.startDate)}</p>
+          <p class="expire">Expires: ${formatedDate(coupon.expiryDate)}</p>
         </div>
+      </div>
       </body>
       </html>
     `,
