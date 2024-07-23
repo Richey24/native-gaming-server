@@ -20,9 +20,11 @@ const gameInstanceSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: ["not-started", "open", "closed"],
-    default: "not started",
+    default: "not-started",
   },
   rewards: [rewardSchema],
+  clientsPlayed: [{ type: mongoose.Schema.Types.ObjectId, ref: "Client" }],
+  clientsWon: [{ type: mongoose.Schema.Types.ObjectId, ref: "Client" }],
 });
 
 const subscriptionSchema = new mongoose.Schema({

@@ -40,13 +40,38 @@ const ClientSchema = new mongoose.Schema(
         },
       },
     ],
-    gamesPlayed: [{ type: mongoose.Schema.Types.ObjectId, ref: "Game" }],
-    // playedGames: [
-    //   {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: "Game",
-    //   },
-    // ],
+    gamesPlayed: [
+      {
+        gameInstance: {
+          game: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Game",
+            required: true,
+          },
+          startTime: { type: Date, required: true },
+          endTime: { type: Date, required: true },
+          status: {
+            type: String,
+            enum: ["not-started", "open", "closed"],
+            default: "not started",
+          },
+          rewards: [
+            {
+              title: {
+                type: String,
+                required: true,
+              },
+              image: {
+                type: String,
+                required: true,
+              },
+            },
+          ],
+          won: { type: Boolean, default: false },
+          playedAt: { type: Date, default: Date.now },
+        },
+      },
+    ],
   },
   { timestamps: true }
 );

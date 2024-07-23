@@ -2,11 +2,11 @@ const Client = require("../../model/Client");
 const User = require("../../model/User");
 const bcrypt = require("bcrypt");
 const validatePassword = require("../../utils/validatePassword");
+const { sendWinningMessage } = require("../../utils/sendMail");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const admin = require("../../firebaseAdmin");
-const Game = require("../../model/Game");
-const ClientGamePlay = require("../../model/ClientGamePlay");
+const { Game } = require("../../model/Game");
 
 exports.registerClient = async (req, res) => {
   const { userId, fullname, country, email, password, confirmPassword } =
@@ -48,13 +48,6 @@ exports.registerClient = async (req, res) => {
         .status(400)
         .json({ message: "Client already registered under this vendor" });
     }
-
-    // const clientExists = await Client.findOne({ email, user: { $ne: userId } });
-    // if (clientExists) {
-    //   return res
-    //     .status(400)
-    //     .json({ message: "Email is already in use under a different vendor" });
-    // }
     const hashedPassword = await bcrypt.hash(password, 8);
 
     const client = new Client({
@@ -97,7 +90,7 @@ exports.loginClient = async (req, res) => {
       country: client.country,
       email: client.email,
     };
-    const token = client.generateAuthToken();
+    const token = await client.generateAuthToken();
 
     res.status(200).json({ user: userWithoutPassword, token });
   } catch (error) {
@@ -148,30 +141,57 @@ exports.socialRegisterClient = async (req, res) => {
 };
 
 exports.playGame = async (req, res) => {
-  const { gameId } = req.body;
+  const { userId, gameInstanceId } = req.query;
   const clientId = req.client._id;
+  const { won } = req.body;
 
-  if (!mongoose.Types.ObjectId.isValid(gameId)) {
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return res.status(400).json({ message: "Invalid User ID" });
+  }
+  if (!mongoose.Types.ObjectId.isValid(gameInstanceId)) {
     return res.status(400).json({ message: "Invalid game ID" });
   }
+  if (!mongoose.Types.ObjectId.isValid(clientId)) {
+    return res.status(400).json({ message: "Invalid client ID" });
+  }
   try {
-    const game = await Game.findById(gameId);
-    if (!game) {
-      return res.status(404).json({ message: "Game not found" });
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const gameInstance = user.gameInstances.id(gameInstanceId);
+    if (!gameInstance) {
+      return res.status(404).json({ message: "Game instance not found" });
+    }
+    const client = await Client.findById(clientId);
+    if (!client) {
+      return res.status(404).json({ message: "Client not found" });
     }
 
-    const clientGamePlay = new ClientGamePlay({
-      client: clientId,
-      game: gameId,
-    });
+    if (gameInstance.status === "not-started") {
+      return res.status(400).json({ message: "Game instance has not started" });
+    }
+    if (gameInstance.status === "closed") {
+      return res.status(400).json({ message: "Game instance is closed" });
+    }
 
-    await clientGamePlay.save();
-    game.numberOfPlayers += 1;
-    await game.save();
+    // Add client to clientsPlayed
+    if (!gameInstance.clientsPlayed.includes(client._id)) {
+      gameInstance.clientsPlayed.push(client._id);
+    }
 
-    res
-      .status(201)
-      .json({ message: "Game played successfully", gamePlay: clientGamePlay });
+    // Add client to clientsWon if won
+    if (won && !gameInstance.clientsWon.includes(client._id)) {
+      gameInstance.clientsWon.push(client._id);
+
+      // Send email to client
+
+      sendWinningMessage(user, client.email, client.fullname);
+    }
+    await user.save();
+    client.gamesPlayed.push({ gameInstance, won });
+    await client.save();
+    res.status(200).json({ message: "Client played the game", gameInstance });
   } catch (error) {
     console.error("Error playing game:", error);
     res.status(500).json({ message: "Internal Server Error" });
