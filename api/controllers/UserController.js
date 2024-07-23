@@ -536,7 +536,14 @@ exports.getUserGameInstances = async (req, res) => {
   const { status } = req.query;
 
   try {
-    const user = await User.findById(userId).populate("gameInstances");
+    const user = await User.findById(userId).populate({
+      path: "gameInstances",
+      populate: {
+        path: "game",
+        model: "Game",
+      },
+    });
+    // const user = await User.findById(userId).populate("gameInstances");
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
