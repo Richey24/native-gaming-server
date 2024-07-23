@@ -8,7 +8,6 @@ const admin = require("../../firebaseAdmin");
 const Client = require("../../model/Client");
 const validatePassword = require("../../utils/validatePassword");
 const { Game } = require("../../model/Game");
-const ClientGamePlay = require("../../model/ClientGamePlay");
 const SubscriptionPlan = require("../../model/SubscriptionPlan");
 
 exports.vendorRegister = async (req, res) => {
@@ -537,20 +536,6 @@ exports.getUserGameInstances = async (req, res) => {
   const { status } = req.query;
 
   try {
-    // const query = { _id: userId };
-    // if (status) {
-    //   query["gameInstances.status"] = status;
-    // }
-
-    // const user = await User.findOne(query)
-    //   .select("gameInstances")
-    //   .populate("gameInstances.game");
-    // if (!user) {
-    //   return res.status(404).json({ message: "User not found" });
-    // }
-    // const gameInstances = user.gameInstances.filter(
-    //   (instance) => !status || instance.status === status
-    // );
     const user = await User.findById(userId).populate("gameInstances");
     if (!user) {
       return res.status(404).json({ message: "User not found" });

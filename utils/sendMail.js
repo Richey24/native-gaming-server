@@ -432,7 +432,7 @@ const sendCouponCode = (coupon, email, name) => {
           </div>
         <div class="container">
           <p>Use Promo Code: <span class="promo">${coupon.code}</span></p>
-           <p class="begin">Expires: ${formatedDate(coupon.startDate)}</p>
+           <p class="begin">Start: ${formatedDate(coupon.startDate)}</p>
           <p class="expire">Expires: ${formatedDate(coupon.expiryDate)}</p>
         </div>
       </div>
@@ -449,10 +449,113 @@ const sendCouponCode = (coupon, email, name) => {
     }
   });
 };
+const sendWinningMessage = (user, email, name) => {
+  const transporter = nodemailer.createTransport({
+    host: "smtp.office365.com",
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.EMAIL,
+      pass: process.env.PASSWORD,
+    },
+  });
+  const mailOptions = {
+    from: process.env.EMAIL,
+    to: email,
+    subject: "Congratulations",
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          /* CSS styles for the email template */
+          @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+
+          body {
+            font-family: 'Montserrat', Arial, sans-serif;
+            line-height: 1.6;
+          }
+            .coupon {
+            border: 5px dotted #bbb; /* Dotted border */
+            width: 80%;
+            border-radius: 15px; /* Rounded border */
+            margin: 0 auto; /* Center the coupon */
+            max-width: 600px;
+          }
+
+          .container {
+          padding: 2px 16px;
+          background-color: #f1f1f1;
+          }
+
+        .promo {
+        background: #ccc;
+        padding: 3px;
+        }
+
+        .expire {
+        color: red;
+        }
+        .begin {
+        color: green;
+        }
+          .header {
+            text-align: center;
+            margin-bottom: 20px;
+          }
+          .message {
+            margin-bottom: 20px;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 5px;
+          }
+          .highlight {
+            font-weight: bold;
+          }
+          .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 12px;
+          }
+          .logo {
+            display: block;
+            margin: 0 auto;
+            max-width: 200px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="coupon">
+          <div class="container">
+              <h3>Congratulations!!!</h3>
+          </div>
+          <img src=${
+            user.logo ??
+            "https://absa7kzimnaf.blob.core.windows.net/newcontainer/4bd838367ba7342586fb35a34d837827"
+          } alt="Logo" style="width:100%;">
+        <div class="container" style="background-color:white">
+            <h5>Dear ${name},</h5>
+            <p>Congratulations on your winning, you would be contacted on how to pick up your wins</p>
+          </div>
+      </div>
+      </body>
+      </html>
+    `,
+  };
+  transporter.sendMail(mailOptions, function (error, info) {
+    if (error) {
+      console.log(error);
+    } else {
+      console.log("Winning mail sent: " + info.response);
+      // do something useful
+    }
+  });
+};
 
 module.exports = {
   sendOtp,
   sendForgotPasswordEmail,
   sendAdminWelcomeMail,
   sendCouponCode,
+  sendWinningMessage,
 };

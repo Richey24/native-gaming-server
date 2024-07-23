@@ -42,7 +42,7 @@ router.post(
   asyncHandler(clientController.socialRegisterClient)
 );
 router.post(
-  "/play-game",
+  "/game-instance-play",
   clientAuthMiddleware,
   asyncHandler(clientController.playGame)
 );
