@@ -497,6 +497,11 @@ exports.createGameInstance = async (req, res) => {
       .status(400)
       .json({ message: "Game ID, start time, and end time are required" });
   }
+  if (!Array.isArray(startTime) || startTime.length === 0) {
+    return res
+      .status(400)
+      .json({ message: "start times must be an array with at least one date" });
+  }
 
   try {
     const game = await Game.findById(gameId);
@@ -510,9 +515,10 @@ exports.createGameInstance = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
+
     const newGameInstance = {
       game: gameId,
-      startTime: new Date(startTime),
+      startTime: startTime.map((time) => new Date(time)),
       endTime: new Date(endTime),
       rewards,
       status: "not-started",
@@ -569,5 +575,76 @@ exports.getAllSubscriptionPlans = async (req, res) => {
   } catch (error) {
     console.error("Error fetching subscription plans:", error);
     res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+exports.getGameInstanceById = async (req, res) => {
+  const { userId, gameInstanceId } = req.query;
+
+  try {
+    const user = await User.findById(userId)
+      .populate("gameInstances.game")
+      .populate("gameInstances.clientsPlayed")
+      .populate("gameInstances.clientsWon");
+    if (!user) {
+      return res.status(404).json({ message: "Game instance not found" });
+    }
+
+    const gameInstance = user.gameInstances.id(gameInstanceId);
+    if (!gameInstance) {
+      return res.status(404).json({ message: "Game instance not found" });
+    }
+
+    res.status(200).json({ gameInstance });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+exports.editGameInstance = async (req, res) => {
+  const { id } = req.params;
+  const { startTime, endTime, rewards } = req.body;
+
+  try {
+    const user = await User.findOne({ "gameInstances._id": id });
+    if (!user) {
+      return res.status(404).json({ message: "Game instance not found" });
+    }
+
+    const gameInstance = user.gameInstances.id(id);
+    if (startTime)
+      gameInstance.startTime = startTime.map((time) => new Date(time));
+    if (endTime) gameInstance.endTime = new Date(endTime);
+    if (rewards) gameInstance.rewards = rewards;
+
+    await user.save();
+    res
+      .status(200)
+      .json({ message: "Game instance updated successfully", gameInstance });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+exports.deleteGameInstance = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const user = await User.findOneAndUpdate(
+      { "gameInstances._id": id },
+      { $pull: { gameInstances: { _id: id } } },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "Game instance not found" });
+    }
+
+    res.status(200).json({ message: "Game instance deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
 };

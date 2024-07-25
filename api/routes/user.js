@@ -50,6 +50,16 @@ router.post(
   authMiddleware,
   asyncHandler(userController.createGameInstance)
 );
+router.put(
+  "/edit-game-instance/:id",
+  authMiddleware,
+  asyncHandler(userController.editGameInstance)
+);
+router.put(
+  "/delete-game-instance/:id",
+  authMiddleware,
+  asyncHandler(userController.deleteGameInstance)
+);
 router.get(
   "/all-game-instance",
   authMiddleware,
@@ -59,4 +69,5 @@ router.get(
   "/get-subscription",
   asyncHandler(userController.getAllSubscriptionPlans)
 );
+router.get("/game-instance", asyncHandler(userController.getGameInstanceById));
 module.exports = router;
