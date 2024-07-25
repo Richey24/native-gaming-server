@@ -55,7 +55,7 @@ router.put(
   authMiddleware,
   asyncHandler(userController.editGameInstance)
 );
-router.put(
+router.delete(
   "/delete-game-instance/:id",
   authMiddleware,
   asyncHandler(userController.deleteGameInstance)
