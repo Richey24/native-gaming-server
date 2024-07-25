@@ -9,7 +9,7 @@ cron.schedule("* * * * *", async () => {
     // Find users with game instances where status is 'not-started' and startTime has passed
     const usersToOpenGames = await User.find({
       "gameInstances.status": "not-started",
-      "gameInstances.startTime": { $lte: now },
+      "gameInstances.startTime": { $elemMatch: { $lte: now } },
     });
 
     // Find users with game instances where status is 'open' and endTime has passed
@@ -24,12 +24,18 @@ cron.schedule("* * * * *", async () => {
     // Update game instances to 'open'
     for (const user of usersToOpenGames) {
       user.gameInstances.forEach((instance) => {
-        if (instance.status === "not-started" && instance.startTime <= now) {
+        if (
+          instance.status === "not-started" &&
+          instance.startTime.some((time) => time <= now)
+        ) {
           instance.status = "open";
           openedCount++;
         }
       });
-      await user.save();
+      await User.findByIdAndUpdate(user._id, {
+        gameInstances: user.gameInstances,
+      });
+      // await user.save();
     }
 
     // Update game instances to 'closed'
@@ -40,7 +46,10 @@ cron.schedule("* * * * *", async () => {
           closedCount++;
         }
       });
-      await user.save();
+      await User.findByIdAndUpdate(user._id, {
+        gameInstances: user.gameInstances,
+      });
+      // await user.save();
     }
 
     console.log(

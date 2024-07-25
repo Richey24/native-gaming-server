@@ -15,7 +15,7 @@ const rewardSchema = new mongoose.Schema({
 
 const gameInstanceSchema = new mongoose.Schema({
   game: { type: mongoose.Schema.Types.ObjectId, ref: "Game", required: true },
-  startTime: { type: Date, required: true },
+  startTime: [{ type: Date, required: true }],
   endTime: { type: Date, required: true },
   status: {
     type: String,

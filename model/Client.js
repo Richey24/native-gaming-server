@@ -53,7 +53,7 @@ const ClientSchema = new mongoose.Schema(
           status: {
             type: String,
             enum: ["not-started", "open", "closed"],
-            default: "not started",
+            default: "not-started",
           },
           rewards: [
             {
