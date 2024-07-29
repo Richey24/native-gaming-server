@@ -213,7 +213,9 @@ const sendOtp = (email, name, otp, type) => {
           </div>
           <div class="message">
             <p>Welcome aboard! If you have any questions or need further assistance, please do not hesitate to reach out to us. We are always here to help.</p>
-            <p>OTP: <strong>${otp}</strong></p>
+            <p>${type !== "client" && "OTP:"} <strong>${
+      type !== "client" && otp
+    }</strong></p>
           </div>
           <div class="footer">
             <p style="color: #777777;">This email was sent by Breaking Black Ventures, LLC. If you no longer wish to receive emails from us, please <a href="#" style="color: #777777; text-decoration: underline;">unsubscribe</a>.</p>

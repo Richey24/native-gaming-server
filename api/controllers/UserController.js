@@ -77,6 +77,7 @@ exports.vendorRegister = async (req, res) => {
       organizationName,
       password,
       email,
+      gender,
       otp,
     });
     await user.save();
@@ -86,6 +87,7 @@ exports.vendorRegister = async (req, res) => {
       firstname: user.firstname,
       lastname: user.lastname,
       email: user.email,
+      gender: user.gender,
       isVerified: user.isVerified,
       subscribed: user.isSubscribed,
     };
@@ -143,6 +145,7 @@ exports.vendorLogin = async (req, res) => {
     email: user.email,
     isVerified: user.isVerified,
     subscribed: user.isSubscribed,
+    gender: user.gender,
   };
   const token = await user.generateAuthToken(user.email);
   res.status(201).json({ user: userWithoutPassword, token });
@@ -231,6 +234,7 @@ exports.socialRegister = async (req, res) => {
     }
 
     const jwtToken = await existingUser.generateAuthToken();
+    await sendOtp(user.email, user.organizationName, "", "vendor");
     res.status(201).json({
       user: existingUser,
       token: jwtToken,
