@@ -4,46 +4,73 @@ const User = require("./model/User");
 cron.schedule("* * * * *", async () => {
   console.log("cron running");
   try {
-    const now = new Date();
-
-    const users = await User.find({
-      "gameInstances.periods": {
-        $elemMatch: {
-          startTime: { $lte: now },
-          endTime: { $gte: now },
-        },
-      },
+    const users = await User.find().populate({
+      path: "gameInstances",
+      populate: { path: "game" }, // Populate game to access the type
     });
 
-    let openedCount = 0;
-    let closedCount = 0;
+    const now = new Date();
 
     for (const user of users) {
-      let updated = false;
-      user.gameInstances.forEach((gameInstance) => {
-        gameInstance.periods.forEach((period) => {
-          if (
-            period.startTime <= now &&
-            period.endTime > now &&
-            gameInstance.status === "not-started"
-          ) {
-            gameInstance.status = "open";
-            openedCount++;
-            updated = true;
-          } else if (period.endTime <= now && gameInstance.status === "open") {
-            gameInstance.status = "closed";
-            closedCount++;
-            updated = true;
+      for (const gameInstance of user.gameInstances) {
+        const { game } = gameInstance;
+        let statusUpdated = false;
+
+        if (game.type === "single-player") {
+          const period = gameInstance.periods[0];
+          console.log("testing error single", period);
+          if (period) {
+            if (now >= period.startTime && now < period.endTime) {
+              if (gameInstance.status !== "open") {
+                gameInstance.status = "open";
+                statusUpdated = true;
+              }
+            } else if (now >= period.endTime) {
+              if (gameInstance.status !== "closed") {
+                gameInstance.status = "closed";
+                statusUpdated = true;
+              }
+            }
           }
-        });
-      });
-      if (updated) {
-        await user.save();
+        } else if (game.type === "group-player") {
+          // For group-player games, iterate through each period
+          for (let i = 0; i < gameInstance.periods.length; i++) {
+            const period = gameInstance.periods[i];
+
+            // Check if the current time is within the period
+            if (
+              now >= period.startTime &&
+              now < new Date(period.startTime.getTime() + 30 * 60000) &&
+              gameInstance.status !== "open"
+            ) {
+              gameInstance.status = "open";
+              statusUpdated = true;
+              break;
+            } else if (
+              now >= new Date(period.startTime.getTime() + 30 * 60000) &&
+              gameInstance.status !== "not-started"
+            ) {
+              gameInstance.status = "not-started";
+              statusUpdated = true;
+            }
+          }
+
+          // Check if all periods have ended to set the status to closed
+          const allPeriodsEnded = gameInstance.periods.every(
+            (period) => now >= period.endTime
+          );
+
+          if (allPeriodsEnded && gameInstance.status !== "closed") {
+            gameInstance.status = "closed";
+            statusUpdated = true;
+          }
+        }
+
+        if (statusUpdated) {
+          await gameInstance.save();
+        }
       }
     }
-    console.log(
-      `Updated game instances: ${openedCount} opened, ${closedCount} closed.`
-    );
   } catch (error) {
     console.error("Error updating game instances:", error);
   }

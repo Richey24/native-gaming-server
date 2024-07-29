@@ -15,6 +15,12 @@ const ClientSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please include your email"],
     },
+    gender: {
+      type: String,
+      default: "Others",
+      enum: ["Female", "Male", "Others"],
+      required: [true, "Please include user gender"],
+    },
     password: {
       type: String,
       // required: [true, "Please include your password"],
