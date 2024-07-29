@@ -174,11 +174,16 @@ exports.playGame = async (req, res) => {
     if (gameInstance.status === "closed") {
       return res.status(400).json({ message: "Game instance is closed" });
     }
-
-    // Add client to clientsPlayed
-    if (!gameInstance.clientsPlayed.includes(client._id)) {
-      gameInstance.clientsPlayed.push(client._id);
+    if (
+      client.gamesPlayed.some((game) =>
+        game.gameInstance.equals(gameInstance._id)
+      )
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Client has already played this game instance" });
     }
+    gameInstance.clientsPlayed.push(client._id);
 
     // Add client to clientsWon if won
     if (won && !gameInstance.clientsWon.includes(client._id)) {
@@ -189,7 +194,7 @@ exports.playGame = async (req, res) => {
       sendWinningMessage(user, client.email, client.fullname);
     }
     await user.save();
-    client.gamesPlayed.push({ gameInstance, won });
+    client.gamesPlayed.push({ gameInstance: gameInstance._id, won });
     await client.save();
     res.status(200).json({ message: "Client played the game", gameInstance });
   } catch (error) {

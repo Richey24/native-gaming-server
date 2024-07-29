@@ -6,52 +6,41 @@ cron.schedule("* * * * *", async () => {
   try {
     const now = new Date();
 
-    // Find users with game instances where status is 'not-started' and startTime has passed
-    const usersToOpenGames = await User.find({
-      "gameInstances.status": "not-started",
-      "gameInstances.startTime": { $elemMatch: { $lte: now } },
-    });
-
-    // Find users with game instances where status is 'open' and endTime has passed
-    const usersToCloseGames = await User.find({
-      "gameInstances.status": "open",
-      "gameInstances.endTime": { $lte: now },
+    const users = await User.find({
+      "gameInstances.periods": {
+        $elemMatch: {
+          startTime: { $lte: now },
+          endTime: { $gte: now },
+        },
+      },
     });
 
     let openedCount = 0;
     let closedCount = 0;
 
-    // Update game instances to 'open'
-    for (const user of usersToOpenGames) {
-      user.gameInstances.forEach((instance) => {
-        if (
-          instance.status === "not-started" &&
-          instance.startTime.some((time) => time <= now)
-        ) {
-          instance.status = "open";
-          openedCount++;
-        }
+    for (const user of users) {
+      let updated = false;
+      user.gameInstances.forEach((gameInstance) => {
+        gameInstance.periods.forEach((period) => {
+          if (
+            period.startTime <= now &&
+            period.endTime > now &&
+            gameInstance.status === "not-started"
+          ) {
+            gameInstance.status = "open";
+            openedCount++;
+            updated = true;
+          } else if (period.endTime <= now && gameInstance.status === "open") {
+            gameInstance.status = "closed";
+            closedCount++;
+            updated = true;
+          }
+        });
       });
-      await User.findByIdAndUpdate(user._id, {
-        gameInstances: user.gameInstances,
-      });
-      // await user.save();
+      if (updated) {
+        await user.save();
+      }
     }
-
-    // Update game instances to 'closed'
-    for (const user of usersToCloseGames) {
-      user.gameInstances.forEach((instance) => {
-        if (instance.status === "open" && instance.endTime <= now) {
-          instance.status = "closed";
-          closedCount++;
-        }
-      });
-      await User.findByIdAndUpdate(user._id, {
-        gameInstances: user.gameInstances,
-      });
-      // await user.save();
-    }
-
     console.log(
       `Updated game instances: ${openedCount} opened, ${closedCount} closed.`
     );

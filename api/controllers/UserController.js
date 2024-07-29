@@ -9,6 +9,7 @@ const Client = require("../../model/Client");
 const validatePassword = require("../../utils/validatePassword");
 const { Game } = require("../../model/Game");
 const SubscriptionPlan = require("../../model/SubscriptionPlan");
+const { GameInstance } = require("../../model/GameInstance");
 
 exports.vendorRegister = async (req, res) => {
   const {
@@ -382,22 +383,6 @@ exports.createDomainName = async (req, res) => {
   }
 };
 
-// exports.getAllSubscribedGames = async (req, res) => {
-//   try {
-//     const userId = req.user._id;
-//     const user = await User.findById(userId).populate("subscribedGames");
-
-//     if (!user) {
-//       return res.status(404).json({ message: "User not found" });
-//     }
-
-//     res.status(200).json({ games: user.subscribedGames });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ message: "Server error" });
-//   }
-// };
-
 exports.getUserByDomainName = async (req, res) => {
   const { domainName } = req.query;
 
@@ -490,17 +475,10 @@ exports.subscribeToPlan = async (req, res) => {
 
 exports.createGameInstance = async (req, res) => {
   const userId = req.user._id;
-  const { gameId, startTime, endTime, rewards } = req.body;
+  const { gameId, startTime, endTime, rewards, intervals } = req.body;
 
-  if (!gameId || !startTime || !endTime) {
-    return res
-      .status(400)
-      .json({ message: "Game ID, start time, and end time are required" });
-  }
-  if (!Array.isArray(startTime) || startTime.length === 0) {
-    return res
-      .status(400)
-      .json({ message: "start times must be an array with at least one date" });
+  if (!gameId) {
+    return res.status(400).json({ message: "Game ID is required" });
   }
 
   try {
@@ -515,14 +493,71 @@ exports.createGameInstance = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
+    let newGameInstance;
 
-    const newGameInstance = {
-      game: gameId,
-      startTime: startTime.map((time) => new Date(time)),
-      endTime: new Date(endTime),
-      rewards,
-      status: "not-started",
-    };
+    if (game.type === "single-player") {
+      if (!startTime || !endTime) {
+        return res.status(400).json({
+          message:
+            "Start time and end time are required for single-player games",
+        });
+      }
+      if (Array.isArray(startTime) || Array.isArray(endTime)) {
+        return res.status(400).json({
+          message:
+            "Single-player games can only have one start time and one end time",
+        });
+      }
+      const rewardsWithOdds = rewards.map((reward) => ({
+        ...reward,
+        odds: reward.odds || 0,
+      }));
+      newGameInstance = new GameInstance({
+        game: gameId,
+        periods: [
+          {
+            startTime: new Date(startTime),
+            endTime: new Date(endTime),
+            rewards: rewardsWithOdds,
+          },
+        ],
+        status: "not-started",
+      });
+    } else if (game.type === "group-player") {
+      if (!startTime || !endTime) {
+        return res.status(400).json({
+          message:
+            "Start time and end time are required for group-player games",
+        });
+      }
+      const periods = [];
+      if (intervals && Array.isArray(intervals)) {
+        intervals.forEach(({ date, startTimes }) => {
+          startTimes.forEach((start) => {
+            const startDateTime = new Date(`${date}T${start}`);
+            const endDateTime = new Date(startDateTime);
+            endDateTime.setMinutes(endDateTime.getMinutes() + 30);
+
+            periods.push({
+              startTime: startDateTime,
+              endTime: endDateTime,
+              rewards,
+            });
+          });
+        });
+      } else {
+        return res.status(400).json({
+          message: "Intervals must be provided for group-player games",
+        });
+      }
+      newGameInstance = new GameInstance({
+        game: gameId,
+        periods,
+        status: "not-started",
+      });
+    } else {
+      return res.status(400).json({ message: "Invalid game type" });
+    }
 
     user.gameInstances.push(newGameInstance);
     await user.save();
@@ -542,14 +577,17 @@ exports.getUserGameInstances = async (req, res) => {
   const { status } = req.query;
 
   try {
-    const user = await User.findById(userId).populate({
-      path: "gameInstances",
-      populate: {
-        path: "game",
-        model: "Game",
-      },
-    });
-    // const user = await User.findById(userId).populate("gameInstances");
+    // const user = await User.findById(userId).populate({
+    //   path: "gameInstances",
+    //   populate: {
+    //     path: "game",
+    //     model: "Game",
+    //   },
+    // });
+    const user = await User.findById(userId)
+      .populate("gameInstances.game")
+      .populate("gameInstances.clientsPlayed")
+      .populate("gameInstances.clientsWon");
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -604,20 +642,84 @@ exports.getGameInstanceById = async (req, res) => {
 
 exports.editGameInstance = async (req, res) => {
   const { id } = req.params;
-  const { startTime, endTime, rewards } = req.body;
+  const userId = req.user._id;
+  const { startTime, endTime, rewards, intervals } = req.body;
+
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return res.status(400).json({ message: "Invalid User ID" });
+  }
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Invalid Game Instance ID" });
+  }
 
   try {
-    const user = await User.findOne({ "gameInstances._id": id });
+    const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ message: "Game instance not found" });
+      return res.status(404).json({ message: "User not found" });
     }
 
     const gameInstance = user.gameInstances.id(id);
-    if (startTime)
-      gameInstance.startTime = startTime.map((time) => new Date(time));
-    if (endTime) gameInstance.endTime = new Date(endTime);
-    if (rewards) gameInstance.rewards = rewards;
+    if (!gameInstance) {
+      return res.status(404).json({ message: "Game instance not found" });
+    }
+    const game = await Game.findById(gameInstance.game);
+    if (!game) {
+      return res.status(404).json({ message: "Associated game not found" });
+    }
 
+    if (game.type === "single-player") {
+      if (startTime && endTime) {
+        if (Array.isArray(startTime) || Array.isArray(endTime)) {
+          return res.status(400).json({
+            message:
+              "Single-player games can only have one start time and one end time",
+          });
+        }
+        const rewardsWithOdds = rewards.map((reward) => ({
+          ...reward,
+          odds: reward.odds || 0,
+        }));
+        gameInstance.periods = [
+          {
+            startTime: new Date(startTime),
+            endTime: new Date(endTime),
+            rewards: rewardsWithOdds,
+          },
+        ];
+      }
+    } else if (game.type === "group-player") {
+      if (!startTime || !endTime) {
+        return res.status(400).json({
+          message:
+            "Start time and end time are required for group-player games",
+        });
+      }
+      const periods = [];
+      if (intervals && Array.isArray(intervals)) {
+        intervals.forEach(({ date, startTimes }) => {
+          startTimes.forEach((start) => {
+            const startDateTime = new Date(`${date}T${start}`);
+            const endDateTime = new Date(startDateTime);
+            endDateTime.setMinutes(endDateTime.getMinutes() + 30);
+
+            periods.push({
+              startTime: startDateTime,
+              endTime: endDateTime,
+              rewards,
+            });
+          });
+        });
+      } else {
+        return res.status(400).json({
+          message: "Intervals must be provided for group-player games",
+        });
+      }
+
+      gameInstance.periods = periods;
+    } else {
+      return res.status(400).json({ message: "Invalid game type" });
+    }
+    await gameInstance.save();
     await user.save();
     res
       .status(200)
