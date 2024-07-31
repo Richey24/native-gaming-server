@@ -15,6 +15,12 @@ const ClientSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please include your email"],
     },
+    gender: {
+      type: String,
+      default: "Others",
+      enum: ["Female", "Male", "Others"],
+      required: [true, "Please include user gender"],
+    },
     password: {
       type: String,
       // required: [true, "Please include your password"],
@@ -43,33 +49,12 @@ const ClientSchema = new mongoose.Schema(
     gamesPlayed: [
       {
         gameInstance: {
-          game: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Game",
-            required: true,
-          },
-          startTime: { type: Date, required: true },
-          endTime: { type: Date, required: true },
-          status: {
-            type: String,
-            enum: ["not-started", "open", "closed"],
-            default: "not-started",
-          },
-          rewards: [
-            {
-              title: {
-                type: String,
-                required: true,
-              },
-              image: {
-                type: String,
-                required: true,
-              },
-            },
-          ],
-          won: { type: Boolean, default: false },
-          playedAt: { type: Date, default: Date.now },
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User.gameInstances",
+          required: true,
         },
+        won: { type: Boolean, default: false },
+        playedAt: { type: Date, default: Date.now },
       },
     ],
   },

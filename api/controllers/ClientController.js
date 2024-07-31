@@ -2,15 +2,22 @@ const Client = require("../../model/Client");
 const User = require("../../model/User");
 const bcrypt = require("bcrypt");
 const validatePassword = require("../../utils/validatePassword");
-const { sendWinningMessage } = require("../../utils/sendMail");
+const { sendWinningMessage, sendOtp } = require("../../utils/sendMail");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const admin = require("../../firebaseAdmin");
 const { Game } = require("../../model/Game");
 
 exports.registerClient = async (req, res) => {
-  const { userId, fullname, country, email, password, confirmPassword } =
-    req.body;
+  const {
+    userId,
+    fullname,
+    country,
+    email,
+    gender,
+    password,
+    confirmPassword,
+  } = req.body;
 
   if (!userId) {
     return res.status(400).json({ message: "Vendor id is required" });
@@ -20,6 +27,9 @@ exports.registerClient = async (req, res) => {
   }
   if (!fullname) {
     return res.status(400).json({ message: "Fullname is required" });
+  }
+  if (!gender) {
+    return res.status(400).json({ message: "Gender is required" });
   }
   if (!validatePassword(password)) {
     return res.status(400).json({
@@ -56,15 +66,24 @@ exports.registerClient = async (req, res) => {
       email,
       password: hashedPassword,
       user: userId,
+      gender,
     });
     await client.save();
     user.clients.push(client._id);
     await user.save();
     let jwtToken = await client.generateAuthToken();
+    await sendOtp(client.email, client.fullname, "", "client");
+    const userWithoutPassword = {
+      _id: client._id,
+      fullname: client.fullname,
+      country: client.country,
+      email: client.email,
+      gender: client.gender,
+    };
     res.status(201).json({
       message: "Client registered successfully",
       token: jwtToken,
-      client,
+      client: userWithoutPassword,
     });
   } catch (err) {
     console.error(err);
@@ -89,10 +108,11 @@ exports.loginClient = async (req, res) => {
       fullname: client.fullname,
       country: client.country,
       email: client.email,
+      gender: client.gender,
     };
     const token = await client.generateAuthToken();
 
-    res.status(200).json({ user: userWithoutPassword, token });
+    res.status(200).json({ client: userWithoutPassword, token });
   } catch (error) {
     console.error("Error logging in client:", error);
     res.status(500).json({ message: "Internal Server Error" });
@@ -104,6 +124,7 @@ exports.socialRegisterClient = async (req, res) => {
   try {
     await admin.auth().verifyIdToken(token);
     const { uid, email, displayName, logo } = user;
+    console.log("user", user);
 
     const vendor = await User.findById(userId);
     if (!vendor) {
@@ -174,11 +195,16 @@ exports.playGame = async (req, res) => {
     if (gameInstance.status === "closed") {
       return res.status(400).json({ message: "Game instance is closed" });
     }
-
-    // Add client to clientsPlayed
-    if (!gameInstance.clientsPlayed.includes(client._id)) {
-      gameInstance.clientsPlayed.push(client._id);
+    if (
+      client.gamesPlayed.some((game) =>
+        game.gameInstance.equals(gameInstance._id)
+      )
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Client has already played this game instance" });
     }
+    gameInstance.clientsPlayed.push(client._id);
 
     // Add client to clientsWon if won
     if (won && !gameInstance.clientsWon.includes(client._id)) {
@@ -189,7 +215,7 @@ exports.playGame = async (req, res) => {
       sendWinningMessage(user, client.email, client.fullname);
     }
     await user.save();
-    client.gamesPlayed.push({ gameInstance, won });
+    client.gamesPlayed.push({ gameInstance: gameInstance._id, won });
     await client.save();
     res.status(200).json({ message: "Client played the game", gameInstance });
   } catch (error) {
