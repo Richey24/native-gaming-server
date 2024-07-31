@@ -146,6 +146,10 @@ exports.vendorLogin = async (req, res) => {
     isVerified: user.isVerified,
     subscribed: user.isSubscribed,
     gender: user.gender,
+    logo: user.logo,
+    clients: user.clients,
+    isSubscribed: user.isSubscribed,
+    domainName: user.domainName,
   };
   const token = await user.generateAuthToken(user.email);
   res.status(201).json({ user: userWithoutPassword, token });
@@ -565,7 +569,7 @@ exports.createGameInstance = async (req, res) => {
 
     user.gameInstances.push(newGameInstance);
     await user.save();
-
+    console.log("instance", newGameInstance);
     res.status(201).json({
       message: "Game instance created successfully",
       gameInstance: newGameInstance,

@@ -16,7 +16,9 @@ const authMiddleware = async (req, res, next) => {
     const user = await User.findOne({
       _id: decoded._id,
       "tokens.token": token,
-    }).select("-password");
+    })
+      .select("-password")
+      .select("-tokens");
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }

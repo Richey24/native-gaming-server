@@ -18,7 +18,6 @@ cron.schedule("* * * * *", async () => {
 
         if (game.type === "single-player") {
           const period = gameInstance.periods[0];
-          console.log("testing error single", period);
           if (period) {
             if (now >= period.startTime && now < period.endTime) {
               if (gameInstance.status !== "open") {
