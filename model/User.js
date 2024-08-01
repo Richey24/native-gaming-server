@@ -26,7 +26,6 @@ const gameInstanceSchema = new mongoose.Schema({
      clientsPlayed: [{ type: mongoose.Schema.Types.ObjectId, ref: "Client" }],
      clientsWon: [{ type: mongoose.Schema.Types.ObjectId, ref: "Client" }],
 });
-const { gameInstanceSchema } = require("./GameInstance");
 
 const subscriptionSchema = new mongoose.Schema({
      plan: {
