@@ -102,7 +102,8 @@ exports.useCoupon = async (req, res) => {
 
 exports.getAllCoupons = async (req, res) => {
   try {
-    const coupons = await Coupon.find().sort({ createdAt: -1 });
+    const userId = req.user._id; // Assuming you have the user's ID in the request object
+    const coupons = await Coupon.find({ user: userId }).sort({ createdAt: -1 });
     res.status(200).json({ coupons });
   } catch (err) {
     console.error(err);
