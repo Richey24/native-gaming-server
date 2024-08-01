@@ -39,6 +39,7 @@ const showRouter = require("./api/routes/showParticipant");
 const gameRouter = require("./api/routes/game");
 const couponRouter = require("./api/routes/coupon");
 const paymentRoutes = require("./api/routes/payment");
+const conventionCenterRoutes = require("./api/routes/conventionCenter");
 
 app.use("/api/admin", adminRouter);
 app.use("/api/user", userRouter);
@@ -48,6 +49,7 @@ app.use("/image", imageRouter);
 app.use("/api/game", gameRouter);
 app.use("/api/coupon", couponRouter);
 app.use("/api", paymentRoutes);
+app.use("/api/convention", conventionCenterRoutes);
 
 app.listen(PORT, () => {
      console.log(`Server running on port ${PORT}`);
