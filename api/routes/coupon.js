@@ -12,7 +12,7 @@ router.post(
 );
 
 router.post("/use", asyncHandler(couponController.useCoupon));
-router.get("/", asyncHandler(couponController.getAllCoupons));
+router.get("/", authMiddleware, asyncHandler(couponController.getAllCoupons));
 router.delete(
   "/delete",
   authMiddleware,
