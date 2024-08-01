@@ -10,10 +10,19 @@ const validatePassword = require("../../utils/validatePassword");
 const { Game } = require("../../model/Game");
 const SubscriptionPlan = require("../../model/SubscriptionPlan");
 const { GameInstance } = require("../../model/GameInstance");
+const ConventionCenter = require("../../model/ConventionCenter");
 
 exports.vendorRegister = async (req, res) => {
-     const { firstname, lastname, organizationName, password, confirmPassword, email, gender } =
-          req.body;
+     const {
+          firstname,
+          lastname,
+          organizationName,
+          password,
+          confirmPassword,
+          email,
+          gender,
+          referralCode,
+     } = req.body;
 
      if (
           !firstname ||
@@ -69,6 +78,18 @@ exports.vendorRegister = async (req, res) => {
                gender,
                otp,
           });
+
+          if (referralCode) {
+               const conventionCenter = await ConventionCenter.findOne({
+                    referralId: referralCode,
+               });
+
+               if (conventionCenter) {
+                    conventionCenter.referredUsers.push(user._id);
+                    await conventionCenter.save();
+               }
+          }
+
           await user.save();
           await sendOtp(user.email, user.organizationName, otp, "vendor");
           userWithoutPassword = {
@@ -187,7 +208,7 @@ exports.resetPassword = async (req, res) => {
 };
 
 exports.socialRegister = async (req, res) => {
-     const { token, user } = req.body;
+     const { token, user, referralCode } = req.body;
      try {
           await admin.auth().verifyIdToken(token);
           const { uid, email, displayName, logo } = user;
@@ -214,6 +235,16 @@ exports.socialRegister = async (req, res) => {
                     isVerified: true,
                     organizationName: firstname + " " + lastname,
                });
+               if (referralCode) {
+                    const conventionCenter = await ConventionCenter.findOne({
+                         referralId: referralCode,
+                    });
+
+                    if (conventionCenter) {
+                         conventionCenter.referredUsers.push(newUser._id);
+                         await conventionCenter.save();
+                    }
+               }
                await existingUser.save();
           }
 
@@ -339,24 +370,28 @@ exports.createDomainName = async (req, res) => {
      if (domainName.length < 2) {
           return res.status(400).json({ message: "Domain name cannot be less than 2 characters" });
      }
+
+     const domain = domainName.toLowerCase();
+
      try {
-          const existingUser = await User.findOne({ domainName });
+          const existingUser = await User.findOne({ domainName: domain });
           if (existingUser) {
                return res.status(400).json({ message: "Domain name already exists" });
           }
 
           const user = await User.findByIdAndUpdate(
                userId,
-               { domainName },
+               { $set: { domainName: domain } },
                { new: true, runValidators: true },
           );
 
           if (!user) {
                return res.status(404).json({ message: "User not found" });
           }
+
           res.status(200).json({ message: "Domain name added successfully", user });
      } catch (error) {
-          console.error("Error logging out:", error);
+          console.error("Error adding domain name:", error);
           res.status(500).json({ message: "Internal Server Error" });
      }
 };
