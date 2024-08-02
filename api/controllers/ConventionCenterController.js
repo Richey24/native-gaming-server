@@ -1,9 +1,22 @@
 const ConventionCenter = require("../../model/ConventionCenter");
+const { sendOtp, sendConventionCenterWelcomeMail } = require("../../utils/sendMail");
 const { v4: uuidv4 } = require("uuid");
 
 exports.createConventionCenter = async (req, res) => {
-     const { name, companyName, companyAddress, title, role, phone, altPhone, email, altEmail } =
-          req.body;
+     const {
+          name,
+          companyName,
+          companyAddress,
+          title,
+          role,
+          phone,
+          altPhone,
+          email,
+          altEmail,
+          altName,
+          altTitle,
+          website,
+     } = req.body;
 
      if (!name || !companyName || !companyAddress || !title || !role || !phone || !email) {
           return res.status(400).json({ message: "All fields are required" });
@@ -23,8 +36,11 @@ exports.createConventionCenter = async (req, res) => {
                email,
                altEmail,
                referralId,
+               altName,
+               altTitle,
+               website,
           });
-
+          sendConventionCenterWelcomeMail(email, name);
           await newConventionCenter.save();
 
           res.status(201).json({

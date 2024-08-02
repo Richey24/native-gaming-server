@@ -2,21 +2,21 @@ const nodemailer = require("nodemailer");
 const formatedDate = require("./formatedDate");
 
 const sendForgotPasswordEmail = (email, name, otp) => {
-  const transporter = nodemailer.createTransport({
-    host: "smtp.office365.com",
-    port: 587,
-    secure: false,
-    auth: {
-      user: process.env.EMAIL,
-      pass: process.env.PASSWORD,
-    },
-  });
+     const transporter = nodemailer.createTransport({
+          host: "smtp.office365.com",
+          port: 587,
+          secure: false,
+          auth: {
+               user: process.env.EMAIL,
+               pass: process.env.PASSWORD,
+          },
+     });
 
-  const mailOptions = {
-    from: process.env.EMAIL,
-    to: email,
-    subject: "Reset Password",
-    html: `
+     const mailOptions = {
+          from: process.env.EMAIL,
+          to: email,
+          subject: "Reset Password",
+          html: `
       <!DOCTYPE html>
       <html>
       <head>
@@ -95,32 +95,32 @@ const sendForgotPasswordEmail = (email, name, otp) => {
       </body>
       </html>
     `,
-  };
+     };
 
-  transporter.sendMail(mailOptions, function (error, info) {
-    if (error) {
-      console.log(error);
-    } else {
-      console.log("Email sent: " + info.response);
-      // do something useful
-    }
-  });
+     transporter.sendMail(mailOptions, function (error, info) {
+          if (error) {
+               console.log(error);
+          } else {
+               console.log("Email sent: " + info.response);
+               // do something useful
+          }
+     });
 };
 
 const sendOtp = (email, name, otp, type) => {
-  const transporter = nodemailer.createTransport({
-    host: "smtp.office365.com",
-    port: 587,
-    secure: false,
-    auth: {
-      user: process.env.EMAIL,
-      pass: process.env.PASSWORD,
-    },
-  });
-  let subject, introMessage;
-  if (type === "vendor") {
-    subject = "Native Gaming";
-    introMessage = `      <p>We are thrilled to welcome you as a new vendor on our vibrant and dynamic Gaming platform.</p>
+     const transporter = nodemailer.createTransport({
+          host: "smtp.office365.com",
+          port: 587,
+          secure: false,
+          auth: {
+               user: process.env.EMAIL,
+               pass: process.env.PASSWORD,
+          },
+     });
+     let subject, introMessage;
+     if (type === "vendor") {
+          subject = "Native Gaming";
+          introMessage = `      <p>We are thrilled to welcome you as a new vendor on our vibrant and dynamic Gaming platform.</p>
         <p>Here are some key benefits of joining our platform:</p>
         <ul>
           <li>Opportunity to create and customize your games.</li>
@@ -128,22 +128,22 @@ const sendOtp = (email, name, otp, type) => {
           <li>Familiarize yourself with our user-friendly interface.</li>
           <li>Get access to emails and data of users that register under you</li>
         </ul>`;
-  } else if (type === "client") {
-    subject = "Native Gaming";
-    introMessage = `<p>We are thrilled to welcome you as a new user on our vibrant and dynamic Gaming platform.</p>
+     } else if (type === "client") {
+          subject = "Native Gaming";
+          introMessage = `<p>We are thrilled to welcome you as a new user on our vibrant and dynamic Gaming platform.</p>
    `;
-  } else if (type === "admin") {
-    subject = "Native Gaming";
-    introMessage = `<p>We are thrilled to welcome you as an Admin on our vibrant and dynamic Gaming platform.</p>`;
-  } else if (type === "participant") {
-    subject = "Hops Contest";
-    introMessage = `<p>We are thrilled to welcome you to Hops Contest</p>`;
-  }
-  const mailOptions = {
-    from: process.env.EMAIL,
-    to: email,
-    subject: subject,
-    html: `
+     } else if (type === "admin") {
+          subject = "Native Gaming";
+          introMessage = `<p>We are thrilled to welcome you as an Admin on our vibrant and dynamic Gaming platform.</p>`;
+     } else if (type === "participant") {
+          subject = "Hops Contest";
+          introMessage = `<p>We are thrilled to welcome you to Hops Contest</p>`;
+     }
+     const mailOptions = {
+          from: process.env.EMAIL,
+          to: email,
+          subject: subject,
+          html: `
       <!DOCTYPE html>
       <html>
       <head>
@@ -204,7 +204,7 @@ const sendOtp = (email, name, otp, type) => {
           <div class="header">
             <img class="logo" src="https://absa7kzimnaf.blob.core.windows.net/newcontainer/4bd838367ba7342586fb35a34d837827" alt="Company Logo">
             <h1 style="color: #333333;">Welcome as a New ${
-              type === "vendor" ? "Vendor" : "Member"
+                 type === "vendor" ? "Vendor" : "Member"
             }!</h1>
           </div>
           <div class="message">
@@ -213,9 +213,7 @@ const sendOtp = (email, name, otp, type) => {
           </div>
           <div class="message">
             <p>Welcome aboard! If you have any questions or need further assistance, please do not hesitate to reach out to us. We are always here to help.</p>
-            <p>${type !== "client" && "OTP:"} <strong>${
-      type !== "client" && otp
-    }</strong></p>
+            <p>${type !== "client" && "OTP:"} <strong>${type !== "client" && otp}</strong></p>
           </div>
           <div class="footer">
             <p style="color: #777777;">This email was sent by Breaking Black Ventures, LLC. If you no longer wish to receive emails from us, please <a href="#" style="color: #777777; text-decoration: underline;">unsubscribe</a>.</p>
@@ -224,39 +222,39 @@ const sendOtp = (email, name, otp, type) => {
       </body>
       </html>       
     `,
-  };
-  transporter.sendMail(mailOptions, function (error, info) {
-    if (error) {
-      console.log(error);
-    } else {
-      console.log("Email sent: " + info);
-      // do something useful
-    }
-  });
+     };
+     transporter.sendMail(mailOptions, function (error, info) {
+          if (error) {
+               console.log(error);
+          } else {
+               console.log("Email sent: " + info);
+               // do something useful
+          }
+     });
 };
 
 const sendAdminWelcomeMail = (email, name) => {
-  const transporter = nodemailer.createTransport({
-    host: "smtp.office365.com",
-    port: 587,
-    secure: false,
-    auth: {
-      user: process.env.EMAIL,
-      pass: process.env.PASSWORD,
-    },
-  });
-  let subject, introMessage;
+     const transporter = nodemailer.createTransport({
+          host: "smtp.office365.com",
+          port: 587,
+          secure: false,
+          auth: {
+               user: process.env.EMAIL,
+               pass: process.env.PASSWORD,
+          },
+     });
+     let subject, introMessage;
 
-  subject = `Welcome ${name} to ImarketPlace Admin Service - The Guardians of Our Digital Realm!`;
-  introMessage = `
+     subject = `Welcome ${name} to ImarketPlace Admin Service - The Guardians of Our Digital Realm!`;
+     introMessage = `
 <p>We are thrilled to welcome you as a new admin member on our vibrant and dynamic Native Gaming site.</p>
 `;
 
-  const mailOptions = {
-    from: process.env.EMAIL,
-    to: email,
-    subject: subject,
-    html: `
+     const mailOptions = {
+          from: process.env.EMAIL,
+          to: email,
+          subject: subject,
+          html: `
 <!DOCTYPE html>
 <html>
 <head>
@@ -331,33 +329,140 @@ const sendAdminWelcomeMail = (email, name) => {
 </body>
 </html>       
 `,
-  };
+     };
 
-  transporter.sendMail(mailOptions, function (error, info) {
-    if (error) {
-      console.log(error);
-    } else {
-      console.log("Admin Welcome Email sent: " + info.response);
-      // do something useful
-    }
-  });
+     transporter.sendMail(mailOptions, function (error, info) {
+          if (error) {
+               console.log(error);
+          } else {
+               console.log("Admin Welcome Email sent: " + info.response);
+               // do something useful
+          }
+     });
+};
+const sendConventionCenterWelcomeMail = (email, name) => {
+     const transporter = nodemailer.createTransport({
+          host: "smtp.office365.com",
+          port: 587,
+          secure: false,
+          auth: {
+               user: process.env.EMAIL,
+               pass: process.env.PASSWORD,
+          },
+     });
+     let subject, introMessage;
+
+     subject = `Welcome ${name} to Native Games`;
+     introMessage = `
+<p>We are thrilled to welcome you as a new member on our vibrant and dynamic Native Gaming site.</p>
+`;
+
+     const mailOptions = {
+          from: process.env.EMAIL,
+          to: email,
+          subject: subject,
+          html: `
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  /* CSS styles for the email template */
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+
+  body {
+    font-family: 'Montserrat', Arial, sans-serif;
+    line-height: 1.6;
+  }
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f5f5f5;
+    border-radius: 5px;
+  }
+  .header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .message {
+    margin-bottom: 20px;
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 5px;
+  }
+  .highlight {
+    font-weight: bold;
+  }
+  .footer {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 12px;
+  }
+  .logo {
+    display: block;
+    margin: 0 auto;
+    max-width: 200px;
+  }
+  .cta-button {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 5px;
+  }
+  .cta-button:hover {
+    background-color: #0056b3;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <img class="logo" src="https://absa7kzimnaf.blob.core.windows.net/newcontainer/4bd838367ba7342586fb35a34d837827" alt="Company Logo">
+  </div>
+  <div class="message">
+    <p>Dear ${name},</p>
+    ${introMessage}
+  </div>
+  <div class="message">
+    <p>Welcome aboard! If you have any questions or need further assistance, please do not hesitate to reach out to us. We are always here to help.</p>
+  </div>
+  <div class="footer">
+    <p style="color: #777777;">This email was sent by Breaking Black Ventures, LLC. If you no longer wish to receive emails from us, please <a href="#" style="color: #777777; text-decoration: underline;">unsubscribe</a>.</p>
+  </div>
+</div>
+</body>
+</html>       
+`,
+     };
+
+     transporter.sendMail(mailOptions, function (error, info) {
+          if (error) {
+               console.log(error);
+          } else {
+               console.log("Admin Welcome Email sent: " + info.response);
+               // do something useful
+          }
+     });
 };
 
 const sendCouponCode = (coupon, email, name) => {
-  const transporter = nodemailer.createTransport({
-    host: "smtp.office365.com",
-    port: 587,
-    secure: false,
-    auth: {
-      user: process.env.EMAIL,
-      pass: process.env.PASSWORD,
-    },
-  });
-  const mailOptions = {
-    from: process.env.EMAIL,
-    to: email,
-    subject: "Coupon Code",
-    html: `
+     const transporter = nodemailer.createTransport({
+          host: "smtp.office365.com",
+          port: 587,
+          secure: false,
+          auth: {
+               user: process.env.EMAIL,
+               pass: process.env.PASSWORD,
+          },
+     });
+     const mailOptions = {
+          from: process.env.EMAIL,
+          to: email,
+          subject: "Coupon Code",
+          html: `
       <!DOCTYPE html>
       <html>
       <head>
@@ -424,8 +529,8 @@ const sendCouponCode = (coupon, email, name) => {
               <h3>Coupon Mail for ${coupon.title}</h3>
           </div>
           <img src=${
-            coupon.logo ??
-            "https://absa7kzimnaf.blob.core.windows.net/newcontainer/4bd838367ba7342586fb35a34d837827"
+               coupon.logo ??
+               "https://absa7kzimnaf.blob.core.windows.net/newcontainer/4bd838367ba7342586fb35a34d837827"
           } alt="Logo" style="width:100%;">
         <div class="container" style="background-color:white">
           <h2><b>GET ${coupon.percentageOff}% OFF YOUR PURCHASE</b></h2>
@@ -441,31 +546,31 @@ const sendCouponCode = (coupon, email, name) => {
       </body>
       </html>
     `,
-  };
-  transporter.sendMail(mailOptions, function (error, info) {
-    if (error) {
-      console.log(error);
-    } else {
-      console.log("Coupon mail sent: " + info.response);
-      // do something useful
-    }
-  });
+     };
+     transporter.sendMail(mailOptions, function (error, info) {
+          if (error) {
+               console.log(error);
+          } else {
+               console.log("Coupon mail sent: " + info.response);
+               // do something useful
+          }
+     });
 };
 const sendWinningMessage = (user, email, name) => {
-  const transporter = nodemailer.createTransport({
-    host: "smtp.office365.com",
-    port: 587,
-    secure: false,
-    auth: {
-      user: process.env.EMAIL,
-      pass: process.env.PASSWORD,
-    },
-  });
-  const mailOptions = {
-    from: process.env.EMAIL,
-    to: email,
-    subject: "Congratulations",
-    html: `
+     const transporter = nodemailer.createTransport({
+          host: "smtp.office365.com",
+          port: 587,
+          secure: false,
+          auth: {
+               user: process.env.EMAIL,
+               pass: process.env.PASSWORD,
+          },
+     });
+     const mailOptions = {
+          from: process.env.EMAIL,
+          to: email,
+          subject: "Congratulations",
+          html: `
       <!DOCTYPE html>
       <html>
       <head>
@@ -532,8 +637,8 @@ const sendWinningMessage = (user, email, name) => {
               <h3>Congratulations!!!</h3>
           </div>
           <img src=${
-            user.logo ??
-            "https://absa7kzimnaf.blob.core.windows.net/newcontainer/4bd838367ba7342586fb35a34d837827"
+               user.logo ??
+               "https://absa7kzimnaf.blob.core.windows.net/newcontainer/4bd838367ba7342586fb35a34d837827"
           } alt="Logo" style="width:100%;">
         <div class="container" style="background-color:white">
             <h5>Dear ${name},</h5>
@@ -543,21 +648,22 @@ const sendWinningMessage = (user, email, name) => {
       </body>
       </html>
     `,
-  };
-  transporter.sendMail(mailOptions, function (error, info) {
-    if (error) {
-      console.log(error);
-    } else {
-      console.log("Winning mail sent: " + info.response);
-      // do something useful
-    }
-  });
+     };
+     transporter.sendMail(mailOptions, function (error, info) {
+          if (error) {
+               console.log(error);
+          } else {
+               console.log("Winning mail sent: " + info.response);
+               // do something useful
+          }
+     });
 };
 
 module.exports = {
-  sendOtp,
-  sendForgotPasswordEmail,
-  sendAdminWelcomeMail,
-  sendCouponCode,
-  sendWinningMessage,
+     sendOtp,
+     sendForgotPasswordEmail,
+     sendAdminWelcomeMail,
+     sendConventionCenterWelcomeMail,
+     sendCouponCode,
+     sendWinningMessage,
 };
