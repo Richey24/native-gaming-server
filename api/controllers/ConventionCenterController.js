@@ -28,8 +28,8 @@ exports.createConventionCenter = async (req, res) => {
      try {
           const referralId = uuidv4();
           let user = await ConventionCenter.findOne({ email });
-
-          if (user.email === email) {
+          console.log("usuus", user);
+          if (user && user.email === email) {
                return res
                     .status(400)
                     .json({ message: "Email is tied to an existing Organization" });
