@@ -2,9 +2,9 @@ const braintree = require("braintree");
 
 const gateway = new braintree.BraintreeGateway({
      environment: braintree.Environment.Sandbox,
-     merchantId: "kb9tcfssdvnbvyqk",
-     publicKey: "fb85s5djff88krrq",
-     privateKey: "2c99b1f9c276086c5b1c1f2b982dcb84",
+     merchantId: process.env.BRAIN_TREE_MERCHANT_ACCOUNT_ID,
+     publicKey: process.env.BRAIN_TREE_PUBLIC_KEY,
+     privateKey: process.env.BRAIN_TREE_PRIVATE_KEY,
 });
 
 exports.paymentCheckout = async (req, res) => {
@@ -18,8 +18,8 @@ exports.paymentCheckout = async (req, res) => {
                     submitForSettlement: true,
                },
                customFields: {
-                    userId, 
-                    planId, 
+                    userId,
+                    planId,
                },
           });
 

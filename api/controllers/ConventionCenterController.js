@@ -3,7 +3,59 @@ const Otp = require("../../model/Otp");
 const generateOtp = require("../../utils/generateOtp");
 const { sendOtp, sendConventionCenterWelcomeMail } = require("../../utils/sendMail");
 const { v4: uuidv4 } = require("uuid");
-const jwt = require("jsonwebtoken");
+const braintree = require("braintree");
+const gateway = require("../../utils/brainTree");
+
+//    address: {
+//                          streetAddress: "123 Main St",
+//                          locality: "Chicago",
+//                          region: "IL",
+//                          postalCode: "60622",
+//                     },
+
+exports.linkBankAccount = async (req, res) => {
+     const { email, bankDetails, dateOfBirth, ssn, address } = req.body;
+
+     try {
+          const existingCenter = await ConventionCenter.findOne({ email });
+
+          if (!existingCenter) {
+               return res.status(404).json({ message: "Convention center not found" });
+          }
+
+          const { name, percentage } = existingCenter;
+
+          const result = await gateway.merchantAccount.create({
+               individual: {
+                    firstName: name,
+                    lastName: "",
+                    email,
+                    dateOfBirth,
+                    ssn,
+                    address,
+               },
+               funding: {
+                    destination: braintree.MerchantAccount.FundingDestination.Bank,
+                    accountNumber: bankDetails.accountNumber,
+                    routingNumber: bankDetails.routingNumber,
+               },
+               tosAccepted: true,
+               masterMerchantAccountId: process.env.BRAIN_TREE_MERCHANT_ACCOUNT_ID,
+          });
+
+          if (result.success) {
+               existingCenter.connectedAccountId = result.merchantAccount.id;
+               await existingCenter.save();
+
+               res.status(200).json(existingCenter);
+          } else {
+               res.status(400).json({ message: result.message });
+          }
+     } catch (error) {
+          console.error("Error linking bank account:", error);
+          res.status(500).json({ message: "Server error" });
+     }
+};
 
 exports.createConventionCenter = async (req, res) => {
      const {
