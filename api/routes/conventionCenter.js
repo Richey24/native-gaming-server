@@ -33,5 +33,6 @@ router.get(
      asyncHandler(conventionCenterController.getReferredUsers),
 );
 router.post("/create", authAdmin, asyncHandler(conventionCenterController.createConventionCenter));
+router.post("/link-bank-details", asyncHandler(conventionCenterController.linkBankAccount));
 
 module.exports = router;

@@ -4,7 +4,7 @@ const User = require("../model/User");
 const authMiddleware = async (req, res, next) => {
      try {
           const token = req.headers.authorization.replace("Bearer ", "");
-
+          console.log({ token });
           if (!token) {
                return res.status(401).json({ message: "No token, authorization denied" });
           }
@@ -24,7 +24,7 @@ const authMiddleware = async (req, res, next) => {
           if (!user) {
                return res.status(404).json({ message: "User not found" });
           }
-
+          console.log({ user });
           req.user = user;
           req.token = token;
           next();

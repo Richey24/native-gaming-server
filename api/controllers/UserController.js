@@ -443,7 +443,7 @@ exports.getUserByDomainName = async (req, res) => {
 exports.subscribeToPlan = async (req, res) => {
      const userId = req.user._id;
      const { planId } = req.body;
-
+     console.log({ userId, planId });
      if (!mongoose.Types.ObjectId.isValid(planId)) {
           return res.status(400).json({ message: "Invalid Plan ID" });
      }
@@ -476,6 +476,8 @@ exports.subscribeToPlan = async (req, res) => {
                },
                { new: true, runValidators: true },
           );
+
+          console.log({ user });
 
           if (!user) {
                return res.status(404).json({ message: "User not found" });

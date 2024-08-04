@@ -1,4 +1,3 @@
-
 const SubscriptionPlan = require("../../model/SubscriptionPlan");
 const User = require("../../model/User");
 
@@ -48,7 +47,7 @@ exports.handleBraintreeWebhook = async (req, res) => {
 };
 
 function verifyBraintreeWebhook(signature, payload) {
-     return true; 
+     return true;
 }
 
 function calculateSubscriptionEndDate(subscription) {

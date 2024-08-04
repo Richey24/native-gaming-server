@@ -13,6 +13,7 @@ const conventionCenterSchema = new Schema(
           email: { type: String, required: true },
           altEmail: { type: String },
           referralId: { type: String, unique: true, required: true },
+          connectedAccountId: { type: String },
           referredUsers: [{ type: Schema.Types.ObjectId, ref: "User" }],
      },
      { timestamps: true },
