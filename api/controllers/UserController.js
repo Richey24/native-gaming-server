@@ -498,6 +498,16 @@ exports.createGameInstance = async (req, res) => {
           return res.status(400).json({ message: "Game ID is required" });
      }
 
+     if (rewards.length > 10) {
+          return res.status(400).json({ message: "Maximum number of rewards is 10" });
+     }
+     const totalOdds = rewards.reduce((acc, reward) => acc + (reward.odds || 0), 0);
+     if (rewards.some((reward) => reward.odds !== 0) && totalOdds !== 100) {
+          return res
+               .status(400)
+               .json({ message: "The sum of all odds must be 100 if odds are provided" });
+     }
+
      try {
           const game = await Game.findById(gameId);
 
