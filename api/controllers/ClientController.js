@@ -187,13 +187,14 @@ exports.playGame = async (req, res) => {
 
           let reward;
           if (rewardId) {
-               gameInstance.periods.forEach((period) => {
-                    period.rewards.forEach((r) => {
-                         if (r._id.toString() === rewardId) {
-                              reward = r;
-                         }
-                    });
-               });
+               reward = findReward(gameInstance, rewardId);
+               // gameInstance.periods.forEach((period) => {
+               //      period.rewards.forEach((r) => {
+               //           if (r._id.toString() === rewardId) {
+               //                reward = r;
+               //           }
+               //      });
+               // });
 
                if (!reward) {
                     return res
@@ -243,4 +244,16 @@ exports.playGame = async (req, res) => {
           console.error("Error playing game:", error);
           res.status(500).json({ message: "Internal Server Error" });
      }
+};
+
+const findReward = (gameInstance, rewardId) => {
+     let reward;
+     gameInstance.periods.forEach((period) => {
+          period.rewards.forEach((r) => {
+               if (r._id.toString() === rewardId) {
+                    reward = r;
+               }
+          });
+     });
+     return reward;
 };
