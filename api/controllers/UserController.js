@@ -643,6 +643,13 @@ exports.getGameInstanceById = async (req, res) => {
 
      try {
           const user = await User.findById(userId)
+               .populate({
+                    path: "gameInstances",
+                    populate: {
+                         path: "periods.rewards",
+                         model: "Reward",
+                    },
+               })
                .populate("gameInstances.game")
                .populate("gameInstances.clientsPlayed")
                .populate("gameInstances.clientsWon");
