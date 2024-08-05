@@ -147,8 +147,8 @@ exports.socialRegisterClient = async (req, res) => {
 };
 
 exports.playGame = async (req, res) => {
-     const clientId = req.client._id;
-     const { userId, gameInstanceId, rewardId } = req.body;
+     // const clientId = req.client._id;
+     const { userId, gameInstanceId, rewardId, clientId } = req.body;
 
      if (!mongoose.Types.ObjectId.isValid(userId)) {
           return res.status(400).json({ message: "Invalid User ID" });
