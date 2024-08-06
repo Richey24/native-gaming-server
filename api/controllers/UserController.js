@@ -585,7 +585,6 @@ exports.createGameInstance = async (req, res) => {
 
           user.gameInstances.push(newGameInstance);
           await user.save();
-          console.log("instance", newGameInstance);
           res.status(201).json({
                message: "Game instance created successfully",
                gameInstance: newGameInstance,
