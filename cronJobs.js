@@ -15,17 +15,29 @@ const addTemporaryFlagToClient = async (userId) => {
           // Select a random client
           const randomClientIndex = Math.floor(Math.random() * user.clients.length);
           const selectedClient = user.clients[randomClientIndex];
-          selectedClient.temporaryFlag = true; // Add a temporary flag
-          await selectedClient.save();
 
-          console.log(`Temporary flag added to client ${selectedClient._id}`);
-
-          // Remove the temporary flag after 1 hour
-          setTimeout(async () => {
-               selectedClient.temporaryFlag = false;
+          // Check if the flag is already set
+          if (!selectedClient.temporaryFlag) {
+               selectedClient.temporaryFlag = true; // Add a temporary flag
                await selectedClient.save();
-               console.log(`Temporary flag removed from client ${selectedClient._id}`);
-          }, 60 * 60 * 1000); // 1 hour in milliseconds
+
+               console.log(`Temporary flag added to client ${selectedClient._id}`);
+
+               // Remove the temporary flag after 20 minutes (20 * 60 * 1000 milliseconds)
+               setTimeout(async () => {
+                    const updatedClient = await User.findOne(
+                         { "clients._id": selectedClient._id },
+                         { "clients.$": 1 },
+                    );
+                    if (updatedClient.clients[0].temporaryFlag) {
+                         updatedClient.clients[0].temporaryFlag = false;
+                         await updatedClient.save();
+                         console.log(
+                              `Temporary flag removed from client ${updatedClient.clients[0]._id}`,
+                         );
+                    }
+               }, 20 * 60 * 1000); // 20 minutes in milliseconds
+          }
      } catch (error) {
           console.error(`Error adding temporary flag to client: ${error.message}`);
      }
