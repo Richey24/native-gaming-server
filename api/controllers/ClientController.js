@@ -210,7 +210,8 @@ exports.playGame = async (req, res) => {
                // Update reward quantity
                reward.quantity -= 1;
           }
-          const client = user.clients.id(clientId);
+          // const client = user.clients.id(clientId);
+          const client = await Client.findById(clientId);
 
           if (!client) {
                return res.status(404).json({ message: "Client not found" });
