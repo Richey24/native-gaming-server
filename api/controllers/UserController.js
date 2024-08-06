@@ -337,11 +337,66 @@ exports.changePassword = async (req, res) => {
 
 exports.getClients = async (req, res) => {
      try {
-          const vendorId = req.user._id;
-          const clients = await Client.find({ user: vendorId })
-               .select("-password")
-               .sort({ createdAt: -1 });
-          res.status(200).json(clients);
+          const userId = req.user._id;
+          const user = await User.findById(userId)
+               .populate({
+                    path: "clients",
+                    select: "fullname email gender country",
+               })
+               .populate({
+                    path: "gameInstances",
+                    populate: {
+                         path: "game",
+                         select: "title",
+                    },
+               });
+
+          if (!user) {
+               return res.status(404).json({ message: "User not found" });
+          }
+
+          const clients = user.clients.map((client) => {
+               const gamesWon = user.gameInstances
+                    .filter((gameInstance) =>
+                         gameInstance.clientsWon.some((cw) => cw.client.equals(client._id)),
+                    )
+                    .map((gameInstance) => {
+                         const rewards = gameInstance.clientsWon
+                              .filter((cw) => cw.client.equals(client._id))
+                              .map((cw) => {
+                                   const period = gameInstance.periods.find((period) =>
+                                        period.rewards.some((reward) =>
+                                             reward._id.equals(cw.reward),
+                                        ),
+                                   );
+                                   const reward = period ? period.rewards.id(cw.reward) : null;
+                                   return reward
+                                        ? {
+                                               rewardId: reward._id,
+                                               rewardTitle: reward.title,
+                                               rewardImage: reward.image,
+                                          }
+                                        : null;
+                              })
+                              .filter(Boolean);
+
+                         return {
+                              gameId: gameInstance._id,
+                              gameTitle: gameInstance.game.title,
+                              rewards,
+                         };
+                    });
+
+               return {
+                    client,
+                    gamesWon,
+               };
+          });
+
+          // const clients = await Client.find({ user: vendorId })
+          //      .select("-password")
+          //      .sort({ createdAt: -1 });
+          res.status(200).json({ clients });
      } catch (error) {
           console.error("Error fetching clients:", error);
           res.status(500).json({ message: "Internal Server Error" });
