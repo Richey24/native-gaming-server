@@ -396,7 +396,7 @@ exports.getClients = async (req, res) => {
           // const clients = await Client.find({ user: vendorId })
           //      .select("-password")
           //      .sort({ createdAt: -1 });
-          res.status(200).json({ clients });
+          res.status(200).json(clients);
      } catch (error) {
           console.error("Error fetching clients:", error);
           res.status(500).json({ message: "Internal Server Error" });
