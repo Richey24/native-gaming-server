@@ -559,7 +559,7 @@ const sendCouponCode = (coupon, email, name) => {
           }
      });
 };
-const sendWinningMessage = (user, email, name) => {
+const sendWinningMessage = (user, client, reward) => {
      const transporter = nodemailer.createTransport({
           host: "smtp.office365.com",
           port: 587,
@@ -571,7 +571,7 @@ const sendWinningMessage = (user, email, name) => {
      });
      const mailOptions = {
           from: process.env.EMAIL,
-          to: email,
+          to: client.email,
           subject: "Congratulations",
           html: `
       <!DOCTYPE html>
@@ -644,7 +644,9 @@ const sendWinningMessage = (user, email, name) => {
                "https://absa7kzimnaf.blob.core.windows.net/newcontainer/4bd838367ba7342586fb35a34d837827"
           } alt="Logo" style="width:100%;">
         <div class="container" style="background-color:white">
-            <h5>Dear ${name},</h5>
+            <h5>Dear ${client.fullname},</h5>
+            <h3>You have won a ${reward.title}</h3>
+                      <img src=${reward.image} alt="Logo" style="width:100%;">
             <p>Congratulations on your winning, you would be contacted on how to pick up your wins</p>
           </div>
       </div>

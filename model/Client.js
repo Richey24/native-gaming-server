@@ -46,22 +46,35 @@ const ClientSchema = new mongoose.Schema(
                     },
                },
           ],
-          // gamesPlayed: [
-          //      {
-          //           gameInstance: {
-          //                type: mongoose.Schema.Types.ObjectId,
-          //                ref: "User.gameInstances",
-          //                required: true,
-          //           },
-          //           won: { type: Boolean, default: false },
-          //           playedAt: { type: Date, default: Date.now },
-          //      },
-          // ],
+          gamesPlayed: [
+               {
+                    gameInstance: {
+                         type: mongoose.Schema.Types.ObjectId,
+                         ref: "User.gameInstances",
+                         required: true,
+                    },
+                    playedAt: { type: Date, default: Date.now },
+               },
+          ],
+          gamesWon: [
+               {
+                    gameInstance: {
+                         type: mongoose.Schema.Types.ObjectId,
+                         ref: "User.gameInstances",
+                         required: true,
+                    },
+                    playedAt: { type: Date, default: Date.now },
+                    rewardTitle: { type: String, default: null },
+                    rewardImage: { type: String, default: null },
+                    rewardId: { type: String, default: null },
+               },
+          ],
           temporaryFlag: { type: Boolean, default: false },
+          flagExpiryTime: { type: Date, default: null },
      },
      { timestamps: true },
 );
-const MAX_TOKENS = 5;
+const MAX_TOKENS = 3;
 ClientSchema.methods.generateAuthToken = async function () {
      const user = this;
      let options = {};
