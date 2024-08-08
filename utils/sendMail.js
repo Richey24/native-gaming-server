@@ -642,7 +642,7 @@ const sendWinningMessage = (user, client, reward) => {
           <img src=${
                user.logo ??
                "https://absa7kzimnaf.blob.core.windows.net/newcontainer/4bd838367ba7342586fb35a34d837827"
-          } alt="Logo" style="width:100%;">
+          } alt="Logo" style="width:50px; height: 50px;">
         <div class="container" style="background-color:white">
             <h5>Dear ${client.fullname},</h5>
             <h3>You have won a ${reward.title}</h3>
