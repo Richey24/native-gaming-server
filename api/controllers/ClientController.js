@@ -64,6 +64,8 @@ exports.registerClient = async (req, res) => {
                country: client.country,
                email: client.email,
                gender: client.gender,
+               gamesPlayed: client.gamesPlayed,
+               gamesWon: client.gamesWon,
           };
           res.status(201).json({
                message: "Client registered successfully",
@@ -94,6 +96,8 @@ exports.loginClient = async (req, res) => {
                country: client.country,
                email: client.email,
                gender: client.gender,
+               gamesPlayed: client.gamesPlayed,
+               gamesWon: client.gamesWon,
           };
           const token = await client.generateAuthToken();
 
