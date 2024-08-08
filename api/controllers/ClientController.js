@@ -223,24 +223,29 @@ exports.playGame = async (req, res) => {
           if (!client) {
                return res.status(404).json({ message: "Client not found" });
           }
-          console.log("game instanceee", gameInstance);
           if (gameInstance.game.type === "single-player") {
-               console.log("reacgee", client);
                if (
                     gameInstance.clientsPlayed.some((clientPlayed) =>
                          clientPlayed._id.equals(client._id),
                     )
                ) {
-                    console.log("already played");
                     return res
                          .status(400)
                          .json({ message: "Client has already played this game instance" });
                } else {
                     gameInstance.clientsPlayed.push(client._id);
+                    client.gamesPlayed.push({
+                         gameInstance: gameInstance._id,
+                         playedAt: new Date(Date.now()),
+                    });
                }
           } else {
                if (!gameInstance.clientsPlayed.includes(client._id)) {
                     gameInstance.clientsPlayed.push(client._id);
+                    client.gamesPlayed.push({
+                         gameInstance: gameInstance._id,
+                         playedAt: new Date(Date.now()),
+                    });
                }
           }
 
@@ -249,10 +254,18 @@ exports.playGame = async (req, res) => {
                     client: client._id,
                     reward: reward._id,
                });
+               client.gamesWon.push({
+                    gameInstance: gameInstance._id,
+                    playedAt: new Date(Date.now()),
+                    rewardTitle: reward.title,
+                    rewardImage: reward.image,
+                    rewardId: reward._id,
+               });
                console.log("got here", reward);
-               await sendWinningMessage(user, client.email, client.fullname);
+               await sendWinningMessage(user, client, reward);
           }
           await user.save();
+          await client.save();
 
           res.status(200).json({ message: "Client played the game", gameInstance });
      } catch (error) {

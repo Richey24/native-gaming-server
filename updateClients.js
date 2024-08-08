@@ -40,19 +40,14 @@ const resetTemporaryFlags = async () => {
           const users = await User.find().populate("clients");
 
           for (const user of users) {
-               let hasChanged = false;
-
-               // Iterate through each client and reset the temporaryFlag
                for (const client of user.clients) {
                     if (client.temporaryFlag === true) {
+                         console.log("client", client);
                          client.temporaryFlag = false;
-                         hasChanged = true;
-                    }
-               }
 
-               // Save the user if any client flag was changed
-               if (hasChanged) {
-                    await user.save();
+                         // Save the client directly
+                         await client.save();
+                    }
                }
           }
 
