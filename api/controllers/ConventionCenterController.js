@@ -5,6 +5,7 @@ const { sendOtp, sendConventionCenterWelcomeMail } = require("../../utils/sendMa
 const { v4: uuidv4 } = require("uuid");
 const braintree = require("braintree");
 const gateway = require("../../utils/brainTree");
+const jwt = require("jsonwebtoken");
 
 //    address: {
 //                          streetAddress: "123 Main St",
@@ -158,6 +159,7 @@ exports.requestOtp = async (req, res) => {
           }
 
           const otp = generateOtp();
+          console.log("otpppp", otp);
           await Otp.create({ email, otp });
 
           sendOtp(conventionCenter.email, conventionCenter.name, otp, "convention");
@@ -184,7 +186,7 @@ exports.verifyOtp = async (req, res) => {
 
           await Otp.deleteOne({ _id: otpRecord._id });
           const conventionCenter = await ConventionCenter.findOne({ email });
-
+          console.log("covetntion center", conventionCenter);
           // You may want to generate a token here for authenticated sessions
           // const token = generateToken(conventionCenter._id);
           const token = jwt.sign(

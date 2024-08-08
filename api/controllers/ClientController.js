@@ -109,7 +109,6 @@ exports.socialRegisterClient = async (req, res) => {
      try {
           await admin.auth().verifyIdToken(token);
           const { uid, email, displayName, logo } = user;
-          console.log("user", user);
 
           const vendor = await User.findById(userId);
           if (!vendor) {
@@ -161,12 +160,27 @@ exports.playGame = async (req, res) => {
      }
 
      try {
-          // Find the user and populate the gameInstances and nested periods.rewards
           const user = await User.findById(userId).populate({
                path: "gameInstances",
-               populate: {
-                    path: "periods.rewards",
-               },
+               populate: [
+                    {
+                         path: "game",
+                         model: "Game", // Assuming your Game model is named "Game"
+                    },
+                    {
+                         path: "periods.rewards",
+                    },
+                    {
+                         path: "clientsPlayed",
+                         model: "Client", // Assuming your Client model is named "Client"
+                         select: "fullname email gender", // Select the fields you need
+                    },
+                    {
+                         path: "clientsWon.client",
+                         model: "Client",
+                         select: "fullname email gender", // Select the fields you need
+                    },
+               ],
           });
           if (!user) {
                return res.status(404).json({ message: "User not found" });
@@ -188,13 +202,6 @@ exports.playGame = async (req, res) => {
           let reward;
           if (rewardId) {
                reward = findReward(gameInstance, rewardId);
-               // gameInstance.periods.forEach((period) => {
-               //      period.rewards.forEach((r) => {
-               //           if (r._id.toString() === rewardId) {
-               //                reward = r;
-               //           }
-               //      });
-               // });
 
                if (!reward) {
                     return res
@@ -216,9 +223,15 @@ exports.playGame = async (req, res) => {
           if (!client) {
                return res.status(404).json({ message: "Client not found" });
           }
-
+          console.log("game instanceee", gameInstance);
           if (gameInstance.game.type === "single-player") {
-               if (gameInstance.clientsPlayed.includes(client._id)) {
+               console.log("reacgee", client);
+               if (
+                    gameInstance.clientsPlayed.some((clientPlayed) =>
+                         clientPlayed._id.equals(client._id),
+                    )
+               ) {
+                    console.log("already played");
                     return res
                          .status(400)
                          .json({ message: "Client has already played this game instance" });
@@ -236,7 +249,8 @@ exports.playGame = async (req, res) => {
                     client: client._id,
                     reward: reward._id,
                });
-               sendWinningMessage(user, client.email, client.fullname);
+               console.log("got here", reward);
+               await sendWinningMessage(user, client.email, client.fullname);
           }
           await user.save();
 
