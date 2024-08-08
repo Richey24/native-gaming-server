@@ -14,21 +14,21 @@ const addTemporaryFlagToClient = async (userId, gameInstance) => {
           }
 
           const existingClientWithFlag = user.clients.find((client) => client.temporaryFlag);
-
+          let selectedClient;
           if (existingClientWithFlag) {
                console.log(`Client ${existingClientWithFlag._id} already has a temporary flag.`);
+               selectedClient = existingClientWithFlag;
           } else {
                // Select a random client
                const randomClientIndex = Math.floor(Math.random() * user.clients.length);
-               const selectedClient = user.clients[randomClientIndex];
+               selectedClient = user.clients[randomClientIndex];
 
                // Set the temporary flag
                selectedClient.temporaryFlag = true;
                selectedClient.flagExpiryTime = new Date(Date.now() + 20 * 60 * 1000); // 20 minutes from now
                await selectedClient.save();
+               console.log(`Temporary flag added to client ${selectedClient._id}`);
           }
-
-          console.log(`Temporary flag added to client ${selectedClient._id}`);
 
           // Set a timeout to perform actions 2 minutes after the status changes to open
           const timeoutId = setTimeout(async () => {
