@@ -1,7 +1,6 @@
 const cron = require("node-cron");
 const User = require("./model/User");
 const Client = require("./model/Client");
-const { GameInstance } = require("./model/GameInstance");
 
 const timeouts = new Map();
 
@@ -33,8 +32,16 @@ const addTemporaryFlagToClient = async (userId, gameInstance) => {
           // Set a timeout to perform actions 2 minutes after the status changes to open
           const timeoutId = setTimeout(async () => {
                try {
-                    const updatedGameInstance = await GameInstance.findById(gameInstance._id);
-                    if (updatedGameInstance.status === "open") {
+                    const updatedUser = await User.findById(userId).populate({
+                         path: "gameInstances",
+                         match: { _id: gameInstance._id },
+                    });
+                    const updatedGameInstance = updatedUser.gameInstances.find(
+                         (instance) => instance._id.toString() === gameInstance._id,
+                    );
+                    console.log("updated user", updatedUser);
+                    console.log("updated game instance", updatedGameInstance);
+                    if (updatedGameInstance && updatedGameInstance.status === "open") {
                          const client = await Client.findById(selectedClient._id);
 
                          if (client) {
