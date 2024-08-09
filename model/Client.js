@@ -50,7 +50,7 @@ const ClientSchema = new mongoose.Schema(
                {
                     gameInstance: {
                          type: mongoose.Schema.Types.ObjectId,
-                         ref: "User.gameInstances",
+                         ref: "GameInstance",
                          required: true,
                     },
                     playedAt: { type: Date, default: Date.now },
@@ -60,7 +60,7 @@ const ClientSchema = new mongoose.Schema(
                {
                     gameInstance: {
                          type: mongoose.Schema.Types.ObjectId,
-                         ref: "User.gameInstances",
+                         ref: "GameInstance",
                          required: true,
                     },
                     playedAt: { type: Date, default: Date.now },
