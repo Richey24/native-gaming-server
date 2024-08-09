@@ -382,6 +382,8 @@ exports.getClients = async (req, res) => {
                     gamesPlayed: client.gamesPlayed,
                     temporaryFlag: client.temporaryFlag,
                     flagExpiryTime: client.flagExpiryTime,
+                    createdAt: client.createdAt,
+                    updatedAt: client.updatedAt,
                     gamesWon: updatedGamesWon,
                };
           });
