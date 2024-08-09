@@ -353,6 +353,10 @@ exports.getClients = async (req, res) => {
                     populate: {
                          path: "gameInstances",
                          model: "User", // Populate the User's gameInstances subdocument
+                         populate: {
+                              path: "game", // Populate the game field inside each gameInstance
+                              model: "Game", // Replace with the correct model name for your Game schema
+                         },
                     },
                });
 
@@ -362,7 +366,10 @@ exports.getClients = async (req, res) => {
                     const gameInstance = client.user.gameInstances.id(wonGame.gameInstance);
                     return {
                          ...wonGame.toObject(),
-                         gameInstance, // Attach the full gameInstance document
+                         gameInstance: {
+                              ...gameInstance.toObject(),
+                              game: gameInstance.game, // Include the populated game field
+                         },
                     };
                });
                return {
